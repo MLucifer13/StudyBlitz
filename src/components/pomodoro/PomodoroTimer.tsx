@@ -352,12 +352,14 @@ const PomodoroTimer = ({
         <Button
           onClick={toggleTimer}
           size="lg"
-          className={`rounded-full w-14 h-14 ${isRunning ? "bg-pink-600 hover:bg-pink-700" : "bg-purple-600 hover:bg-purple-700"} shadow-[0_0_15px_rgba(139,92,246,0.5)] transition-all duration-300`}
+          className={`relative rounded-full w-16 h-16 ${isRunning ? "bg-gradient-to-r from-pink-600 to-red-600 hover:from-pink-700 hover:to-red-700" : "bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"} shadow-[0_0_20px_rgba(139,92,246,0.6)] transition-all duration-300 overflow-hidden group`}
         >
+          <span className="absolute inset-0 bg-black opacity-0 group-hover:opacity-10 transition-opacity duration-300 rounded-full"></span>
+          <span className="absolute -inset-1 bg-gradient-to-r from-purple-500 to-pink-500 opacity-0 group-hover:opacity-30 blur-md transition-opacity duration-300 rounded-full animate-pulse"></span>
           {isRunning ? (
-            <Pause className="w-6 h-6" />
+            <Pause className="w-7 h-7 relative z-10" />
           ) : (
-            <Play className="w-6 h-6 ml-0.5" />
+            <Play className="w-7 h-7 ml-0.5 relative z-10" />
           )}
         </Button>
         <Button

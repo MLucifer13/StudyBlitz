@@ -1,10 +1,9 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Menu,
   X,
-  Settings,
   Calendar,
   CheckSquare,
   Clock,
@@ -13,6 +12,7 @@ import {
   LogIn,
   LogOut,
   User,
+  UserPlus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -35,6 +35,7 @@ const Navbar = ({
   onToggleTheme = () => {},
   activeItem = "dashboard",
 }: NavbarProps) => {
+  const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -65,8 +66,17 @@ const Navbar = ({
 
   // This is a placeholder function that will be replaced with actual backend integration
   const handleLogin = () => {
-    // In a real implementation, this would make an API call to the backend
-    setIsLoggedIn(!isLoggedIn);
+    if (isLoggedIn) {
+      // Logout logic
+      setIsLoggedIn(false);
+    } else {
+      // Navigate to login page
+      navigate("/login");
+    }
+  };
+
+  const handleSignUp = () => {
+    navigate("/signup");
   };
 
   return (
@@ -123,34 +133,19 @@ const Navbar = ({
           </Link>
         ))}
 
-        {/* Settings Dropdown */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              className="relative group p-2 rounded-full transition-all duration-300 text-gray-400 hover:text-white hover:bg-purple-900/10"
-            >
-              <Settings className="h-5 w-5" />
-              <div className="absolute -inset-0.5 rounded-full opacity-0 group-hover:opacity-100 bg-gradient-to-r from-purple-500 via-blue-500 to-pink-500 blur-sm group-hover:blur transition duration-500" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            align="end"
-            className="bg-black/90 border border-purple-900/50 backdrop-blur-md"
-          >
-            <DropdownMenuItem
-              onClick={onToggleTheme}
-              className="text-gray-300 hover:text-white hover:bg-purple-900/20 cursor-pointer flex items-center gap-2"
-            >
-              {isDarkMode ? (
-                <Sun className="h-4 w-4" />
-              ) : (
-                <Moon className="h-4 w-4" />
-              )}
-              <span>{isDarkMode ? "Light Mode" : "Dark Mode"}</span>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        {/* Theme Toggle Button */}
+        <Button
+          variant="ghost"
+          onClick={onToggleTheme}
+          className="relative group p-2 rounded-full transition-all duration-300 text-gray-400 hover:text-white hover:bg-purple-900/10"
+        >
+          {isDarkMode ? (
+            <Sun className="h-5 w-5" />
+          ) : (
+            <Moon className="h-5 w-5" />
+          )}
+          <div className="absolute -inset-0.5 rounded-full opacity-0 group-hover:opacity-100 bg-gradient-to-r from-purple-500 via-blue-500 to-pink-500 blur-sm group-hover:blur transition duration-500" />
+        </Button>
 
         {/* Login/User Profile Button */}
         {isLoggedIn ? (
@@ -175,10 +170,6 @@ const Navbar = ({
                 <User className="h-4 w-4 mr-2" />
                 <span>Profile</span>
               </DropdownMenuItem>
-              <DropdownMenuItem className="text-gray-300 hover:text-white hover:bg-purple-900/20 cursor-pointer">
-                <Settings className="h-4 w-4 mr-2" />
-                <span>Settings</span>
-              </DropdownMenuItem>
               <DropdownMenuSeparator className="bg-gray-700" />
               <DropdownMenuItem
                 onClick={handleLogin}
@@ -190,15 +181,26 @@ const Navbar = ({
             </DropdownMenuContent>
           </DropdownMenu>
         ) : (
-          <Button
-            onClick={handleLogin}
-            className="relative group ml-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 rounded-md transition-all duration-300 text-white shadow-[0_0_15px_rgba(139,92,246,0.3)]"
-          >
-            <div className="flex items-center space-x-2">
-              <LogIn className="h-5 w-5" />
-              <span>Login</span>
-            </div>
-          </Button>
+          <div className="flex items-center space-x-2">
+            <Button
+              onClick={handleSignUp}
+              className="relative group px-4 py-2 bg-transparent border border-purple-600 hover:bg-purple-900/20 rounded-md transition-all duration-300 text-purple-400 hover:text-purple-300"
+            >
+              <div className="flex items-center space-x-2">
+                <UserPlus className="h-5 w-5" />
+                <span>Sign Up</span>
+              </div>
+            </Button>
+            <Button
+              onClick={handleLogin}
+              className="relative group px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 rounded-md transition-all duration-300 text-white shadow-[0_0_15px_rgba(139,92,246,0.3)]"
+            >
+              <div className="flex items-center space-x-2">
+                <LogIn className="h-5 w-5" />
+                <span>Login</span>
+              </div>
+            </Button>
+          </div>
         )}
       </div>
 
@@ -293,7 +295,32 @@ const Navbar = ({
                 <span>{isDarkMode ? "Light Mode" : "Dark Mode"}</span>
               </div>
             </Button>
-            {isLoggedIn && (
+            {!isLoggedIn ? (
+              <>
+                <Link to="/signup" onClick={toggleMobileMenu}>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start text-purple-400 hover:text-purple-300 hover:bg-purple-900/10 px-3 py-2"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <UserPlus className="h-5 w-5" />
+                      <span>Sign Up</span>
+                    </div>
+                  </Button>
+                </Link>
+                <Link to="/login" onClick={toggleMobileMenu}>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start text-blue-400 hover:text-blue-300 hover:bg-blue-900/10 px-3 py-2"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <LogIn className="h-5 w-5" />
+                      <span>Login</span>
+                    </div>
+                  </Button>
+                </Link>
+              </>
+            ) : (
               <Button
                 variant="ghost"
                 className="w-full justify-start text-red-400 hover:text-red-300 hover:bg-red-900/10 px-3 py-2"
