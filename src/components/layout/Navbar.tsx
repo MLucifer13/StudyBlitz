@@ -80,13 +80,13 @@ const Navbar = ({
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-black border-b border-purple-900/50 h-[70px] px-4 md:px-6 flex items-center justify-between">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-black border-b border-purple-900/50 h-[70px] px-3 md:px-6 flex items-center justify-between">
       {/* Logo */}
       <Link to="/" className="flex items-center">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="text-2xl font-bold bg-gradient-to-r from-purple-500 via-blue-500 to-pink-500 bg-clip-text text-transparent"
+          className="text-xl md:text-2xl font-bold bg-gradient-to-r from-purple-500 via-blue-500 to-pink-500 bg-clip-text text-transparent"
         >
           <span className="mr-1">Study</span>
           <span className="relative">
@@ -211,31 +211,31 @@ const Navbar = ({
           <Button
             onClick={handleLogin}
             variant="ghost"
-            className="relative group p-2 mr-2 rounded-full transition-all duration-300 text-purple-400 hover:text-white hover:bg-purple-900/10"
+            className="relative group p-1.5 mr-1.5 rounded-full transition-all duration-300 text-purple-400 hover:text-white hover:bg-purple-900/10"
           >
-            <LogIn className="h-5 w-5" />
+            <LogIn className="h-4 w-4" />
             <div className="absolute -inset-0.5 rounded-full opacity-0 group-hover:opacity-100 bg-gradient-to-r from-purple-500 via-blue-500 to-pink-500 blur-sm group-hover:blur transition duration-500" />
           </Button>
         ) : (
           <Button
             onClick={handleLogin}
             variant="ghost"
-            className="relative group p-2 mr-2 rounded-full transition-all duration-300 text-purple-400 hover:text-white hover:bg-purple-900/10"
+            className="relative group p-1.5 mr-1.5 rounded-full transition-all duration-300 text-purple-400 hover:text-white hover:bg-purple-900/10"
           >
-            <User className="h-5 w-5" />
+            <User className="h-4 w-4" />
             <div className="absolute -inset-0.5 rounded-full opacity-0 group-hover:opacity-100 bg-gradient-to-r from-purple-500 via-blue-500 to-pink-500 blur-sm group-hover:blur transition duration-500" />
           </Button>
         )}
 
         <Button
           variant="ghost"
-          className="relative group p-2 rounded-full transition-all duration-300 text-gray-400 hover:text-white hover:bg-purple-900/10"
+          className="relative group p-1.5 rounded-full transition-all duration-300 text-gray-400 hover:text-white hover:bg-purple-900/10"
           onClick={toggleMobileMenu}
         >
           {isMobileMenuOpen ? (
-            <X className="h-6 w-6" />
+            <X className="h-5 w-5" />
           ) : (
-            <Menu className="h-6 w-6" />
+            <Menu className="h-5 w-5" />
           )}
           <div className="absolute -inset-0.5 rounded-full opacity-0 group-hover:opacity-100 bg-gradient-to-r from-purple-500 via-blue-500 to-pink-500 blur-sm group-hover:blur transition duration-500" />
         </Button>

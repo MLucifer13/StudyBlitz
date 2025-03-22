@@ -199,34 +199,24 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
       {/* Top Bar with Time and Controls */}
       <div
         className={cn(
-          "fixed top-0 left-0 right-0 backdrop-blur-md px-4 py-3 z-50 flex justify-between items-center",
+          "fixed top-0 left-0 right-0 backdrop-blur-md px-2 sm:px-4 py-2 sm:py-3 z-50 flex justify-between items-center",
           appTheme === "dark"
             ? "bg-black/80 border-b border-gray-800"
             : "bg-white/80 border-b border-gray-200 shadow-sm",
         )}
       >
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-2 sm:space-x-4">
           <motion.div
-            className="text-xl font-bold bg-gradient-to-r from-purple-500 via-blue-500 to-pink-500 bg-clip-text text-transparent"
+            className="text-lg sm:text-xl font-bold bg-gradient-to-r from-purple-500 via-blue-500 to-pink-500 bg-clip-text text-transparent"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
           >
-            <span className="mr-1">Study</span>
-            <span className="relative">
-              Blitz
-              <motion.span
-                className="absolute -top-1 -right-3 text-xs text-pink-500"
-                animate={{ opacity: [0.5, 1, 0.5] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              >
-                ⚡
-              </motion.span>
-            </span>
+            <span className="mr-1">StudyBlitz</span>
           </motion.div>
           <TimeDisplay theme={appTheme} />
         </div>
 
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-1.5 sm:space-x-3">
           <AIAssistant
             enabled={aiEnabled}
             onToggle={toggleAI}
@@ -273,7 +263,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             )}
           >
             {appTheme === "dark" ? (
-              <Sun className="h-4 w-4" />
+              <Sun className="h-4 w-4 flex" />
             ) : (
               <Moon className="h-4 w-4" />
             )}
@@ -282,20 +272,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
           {/* Color Theme Selector */}
           <div className="flex space-x-2">
             {Object.keys(getThemeColors()).map((color) => (
-              <Button
-                key={color}
-                size="icon"
-                variant="outline"
-                className={cn(
-                  "w-8 h-8 rounded-full border-2",
-                  `border-${color === "purple" ? "purple" : color === "blue" ? "blue" : "pink"}-500`,
-                  `bg-${color === "purple" ? "purple" : color === "blue" ? "blue" : "pink"}-500/20`,
-                  colorTheme === color &&
-                    getThemeColors()[colorTheme as keyof typeof themeColors]
-                      .glow,
-                )}
-                onClick={() => setColorTheme(color as ColorTheme)}
-              />
+              <></>
             ))}
           </div>
 
@@ -314,21 +291,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
           </Button>
         </div>
       </div>
-
       {/* Main Content */}
-      <div className="container mx-auto px-4 py-8 pt-20">
-        <motion.h1
-          className={cn(
-            "text-4xl font-bold text-center mb-8 bg-gradient-to-r bg-clip-text text-transparent",
-            getThemeColors()[colorTheme].primary,
-          )}
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          StudyBlitz Dashboard
-        </motion.h1>
-
+      <div className="container mx-auto px-2 sm:px-4 py-8 pt-20">
         {/* Dashboard Tabs */}
         <Tabs
           defaultValue={activeTab}
@@ -388,9 +352,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 
           {/* All Tools View */}
           <TabsContent value="all" className="mt-6">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
               <motion.div
-                className="lg:col-span-2"
+                className="lg:col-span-2 order-2 lg:order-1"
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.3, delay: 0.1 }}
@@ -401,7 +365,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                 />
               </motion.div>
               <motion.div
-                className="flex flex-col gap-6"
+                className="flex flex-col gap-4 sm:gap-6 order-1 lg:order-2"
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.3, delay: 0.2 }}
@@ -450,7 +414,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
           </TabsContent>
         </Tabs>
       </div>
-
       {/* Settings Panel */}
       <SettingsPanel
         open={showSettings}
@@ -462,7 +425,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         focusMode={focusMode}
         onFocusModeChange={setFocusMode}
       />
-
       {/* Glowing Background Elements */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-[-1]">
         <div
