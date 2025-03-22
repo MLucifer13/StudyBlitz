@@ -8,6 +8,15 @@ module.exports = {
     "./src/**/*.{ts,tsx}",
   ],
   prefix: "",
+  variants: {
+    extend: {
+      backgroundColor: ["focus-mode"],
+      textColor: ["focus-mode"],
+      borderColor: ["focus-mode"],
+      opacity: ["focus-mode"],
+      animation: ["focus-mode"],
+    },
+  },
   theme: {
     container: {
       center: true,
@@ -82,6 +91,21 @@ module.exports = {
             lighter: "#E2E8F0", // Very light gray
           },
         },
+        // Focus mode colors - reduced saturation and contrast
+        focus: {
+          background: {
+            light: "#F7FAFC", // Very light gray with slight blue tint
+            dark: "#171923", // Very dark gray with slight blue tint
+          },
+          text: {
+            light: "#4A5568", // Medium gray for light mode
+            dark: "#A0AEC0", // Light gray for dark mode
+          },
+          accent: {
+            light: "#CBD5E0", // Light gray with slight blue tint
+            dark: "#2D3748", // Dark gray with slight blue tint
+          },
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -101,6 +125,10 @@ module.exports = {
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+      },
+      // Focus mode styles
+      opacity: {
+        5: "0.05",
       },
     },
   },

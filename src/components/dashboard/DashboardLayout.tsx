@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { Settings, LayoutGrid, Moon, Sun } from "lucide-react";
+import { Settings, LayoutGrid, Moon, Sun, Eye, EyeOff } from "lucide-react";
 import WeeklyPlanner from "@/components/planner/WeeklyPlanner";
 import TodoList from "@/components/todo/TodoList";
 import PomodoroTimer from "@/components/pomodoro/PomodoroTimer";
@@ -19,6 +19,12 @@ interface DashboardLayoutProps {
 
 export type ColorTheme = "purple" | "blue" | "pink";
 export type AppTheme = "dark" | "light";
+export type ColorBlindMode =
+  | "default"
+  | "deuteranopia"
+  | "protanopia"
+  | "tritanopia"
+  | "monochromacy";
 
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   activeTab = "all",
@@ -29,6 +35,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   const [appTheme, setAppTheme] = useState<AppTheme>("dark");
   const [aiEnabled, setAiEnabled] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
+  const [colorBlindMode, setColorBlindMode] =
+    useState<ColorBlindMode>("default");
+  const [focusMode, setFocusMode] = useState(false);
 
   // Theme color classes
   const themeColors = {
@@ -52,6 +61,98 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     },
   };
 
+  // Color blind mode theme colors
+  const colorBlindThemeColors = {
+    deuteranopia: {
+      purple: {
+        primary: "from-blue-500 to-blue-700",
+        secondary: "from-blue-400 to-blue-600",
+        accent: "blue-500",
+        glow: "shadow-[0_0_15px_rgba(59,130,246,0.5)]",
+      },
+      blue: {
+        primary: "from-blue-600 to-teal-600",
+        secondary: "from-blue-500 to-teal-500",
+        accent: "blue-600",
+        glow: "shadow-[0_0_15px_rgba(59,130,246,0.5)]",
+      },
+      pink: {
+        primary: "from-orange-500 to-orange-700",
+        secondary: "from-orange-400 to-orange-600",
+        accent: "orange-500",
+        glow: "shadow-[0_0_15px_rgba(237,137,54,0.5)]",
+      },
+    },
+    protanopia: {
+      purple: {
+        primary: "from-blue-500 to-purple-600",
+        secondary: "from-blue-400 to-purple-500",
+        accent: "blue-500",
+        glow: "shadow-[0_0_15px_rgba(59,130,246,0.5)]",
+      },
+      blue: {
+        primary: "from-blue-600 to-cyan-600",
+        secondary: "from-blue-500 to-cyan-500",
+        accent: "blue-600",
+        glow: "shadow-[0_0_15px_rgba(59,130,246,0.5)]",
+      },
+      pink: {
+        primary: "from-yellow-500 to-yellow-700",
+        secondary: "from-yellow-400 to-yellow-600",
+        accent: "yellow-500",
+        glow: "shadow-[0_0_15px_rgba(236,201,75,0.5)]",
+      },
+    },
+    tritanopia: {
+      purple: {
+        primary: "from-pink-500 to-red-500",
+        secondary: "from-pink-400 to-red-400",
+        accent: "pink-500",
+        glow: "shadow-[0_0_15px_rgba(236,72,153,0.5)]",
+      },
+      blue: {
+        primary: "from-red-500 to-red-700",
+        secondary: "from-red-400 to-red-600",
+        accent: "red-500",
+        glow: "shadow-[0_0_15px_rgba(229,62,62,0.5)]",
+      },
+      pink: {
+        primary: "from-green-500 to-green-700",
+        secondary: "from-green-400 to-green-600",
+        accent: "green-500",
+        glow: "shadow-[0_0_15px_rgba(72,187,120,0.5)]",
+      },
+    },
+    monochromacy: {
+      purple: {
+        primary: "from-gray-500 to-gray-700",
+        secondary: "from-gray-400 to-gray-600",
+        accent: "gray-500",
+        glow: "shadow-[0_0_15px_rgba(160,174,192,0.5)]",
+      },
+      blue: {
+        primary: "from-gray-600 to-gray-800",
+        secondary: "from-gray-500 to-gray-700",
+        accent: "gray-600",
+        glow: "shadow-[0_0_15px_rgba(74,85,104,0.5)]",
+      },
+      pink: {
+        primary: "from-gray-400 to-gray-600",
+        secondary: "from-gray-300 to-gray-500",
+        accent: "gray-400",
+        glow: "shadow-[0_0_15px_rgba(226,232,240,0.5)]",
+      },
+    },
+  };
+
+  // Get the appropriate theme colors based on color blind mode
+  const getThemeColors = () => {
+    if (colorBlindMode === "default") {
+      return themeColors;
+    }
+    return colorBlindThemeColors[colorBlindMode];
+  };
+
   // Apply theme to document
   useEffect(() => {
     const root = window.document.documentElement;
@@ -62,7 +163,17 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
       root.classList.add("light");
       root.classList.remove("dark");
     }
-  }, [appTheme]);
+
+    // Apply focus mode class
+    if (focusMode) {
+      root.classList.add("focus-mode");
+    } else {
+      root.classList.remove("focus-mode");
+    }
+
+    // Apply color blind mode as a data attribute
+    root.setAttribute("data-color-blind-mode", colorBlindMode);
+  }, [appTheme, focusMode, colorBlindMode]);
 
   const toggleAI = () => {
     setAiEnabled(!aiEnabled);
@@ -70,6 +181,10 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 
   const toggleTheme = () => {
     setAppTheme(appTheme === "dark" ? "light" : "dark");
+  };
+
+  const toggleFocusMode = () => {
+    setFocusMode(!focusMode);
   };
 
   return (
@@ -118,6 +233,33 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             className="relative"
           />
 
+          {/* Focus Mode Toggle */}
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={toggleFocusMode}
+            className={cn(
+              "rounded-full w-8 h-8 border-2 relative overflow-hidden",
+              focusMode
+                ? "border-green-400 bg-green-500/20 text-green-400 hover:bg-green-500/30"
+                : "border-gray-400 bg-gray-500/20 text-gray-400 hover:bg-gray-500/30",
+            )}
+          >
+            {focusMode && (
+              <motion.span
+                className="absolute inset-0 bg-green-500/10"
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.3 }}
+              />
+            )}
+            {focusMode ? (
+              <EyeOff className="h-4 w-4 relative z-10" />
+            ) : (
+              <Eye className="h-4 w-4 relative z-10" />
+            )}
+          </Button>
+
           {/* Theme Toggle */}
           <Button
             variant="outline"
@@ -139,7 +281,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 
           {/* Color Theme Selector */}
           <div className="flex space-x-2">
-            {Object.keys(themeColors).map((color) => (
+            {Object.keys(getThemeColors()).map((color) => (
               <Button
                 key={color}
                 size="icon"
@@ -149,7 +291,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                   `border-${color === "purple" ? "purple" : color === "blue" ? "blue" : "pink"}-500`,
                   `bg-${color === "purple" ? "purple" : color === "blue" ? "blue" : "pink"}-500/20`,
                   colorTheme === color &&
-                    themeColors[colorTheme as keyof typeof themeColors].glow,
+                    getThemeColors()[colorTheme as keyof typeof themeColors]
+                      .glow,
                 )}
                 onClick={() => setColorTheme(color as ColorTheme)}
               />
@@ -177,7 +320,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         <motion.h1
           className={cn(
             "text-4xl font-bold text-center mb-8 bg-gradient-to-r bg-clip-text text-transparent",
-            themeColors[colorTheme].primary,
+            getThemeColors()[colorTheme].primary,
           )}
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -204,7 +347,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
               value="all"
               className={cn(
                 "data-[state=active]:bg-gradient-to-r",
-                `data-[state=active]:${themeColors[colorTheme].primary}`,
+                `data-[state=active]:${getThemeColors()[colorTheme].primary}`,
                 "data-[state=active]:text-white",
               )}
             >
@@ -215,7 +358,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
               value="planner"
               className={cn(
                 "data-[state=active]:bg-gradient-to-r",
-                `data-[state=active]:${themeColors[colorTheme].primary}`,
+                `data-[state=active]:${getThemeColors()[colorTheme].primary}`,
                 "data-[state=active]:text-white",
               )}
             >
@@ -225,7 +368,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
               value="todo"
               className={cn(
                 "data-[state=active]:bg-gradient-to-r",
-                `data-[state=active]:${themeColors[colorTheme].primary}`,
+                `data-[state=active]:${getThemeColors()[colorTheme].primary}`,
                 "data-[state=active]:text-white",
               )}
             >
@@ -235,7 +378,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
               value="pomodoro"
               className={cn(
                 "data-[state=active]:bg-gradient-to-r",
-                `data-[state=active]:${themeColors[colorTheme].primary}`,
+                `data-[state=active]:${getThemeColors()[colorTheme].primary}`,
                 "data-[state=active]:text-white",
               )}
             >
@@ -252,7 +395,10 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.3, delay: 0.1 }}
               >
-                <WeeklyPlanner theme={appTheme} />
+                <WeeklyPlanner
+                  theme={appTheme}
+                  colorBlindMode={colorBlindMode}
+                />
               </motion.div>
               <motion.div
                 className="flex flex-col gap-6"
@@ -261,7 +407,10 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                 transition={{ duration: 0.3, delay: 0.2 }}
               >
                 <TodoList theme={appTheme} />
-                <PomodoroTimer theme={appTheme} />
+                <PomodoroTimer
+                  theme={appTheme}
+                  colorBlindMode={colorBlindMode}
+                />
               </motion.div>
             </div>
           </TabsContent>
@@ -274,7 +423,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
               transition={{ duration: 0.3 }}
               className="max-w-5xl mx-auto"
             >
-              <WeeklyPlanner theme={appTheme} />
+              <WeeklyPlanner theme={appTheme} colorBlindMode={colorBlindMode} />
             </motion.div>
           </TabsContent>
 
@@ -296,7 +445,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
               transition={{ duration: 0.3 }}
               className="max-w-md mx-auto"
             >
-              <PomodoroTimer theme={appTheme} />
+              <PomodoroTimer theme={appTheme} colorBlindMode={colorBlindMode} />
             </motion.div>
           </TabsContent>
         </Tabs>
@@ -308,6 +457,10 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         onOpenChange={setShowSettings}
         theme={appTheme}
         onThemeChange={setAppTheme}
+        colorBlindMode={colorBlindMode}
+        onColorBlindModeChange={setColorBlindMode}
+        focusMode={focusMode}
+        onFocusModeChange={setFocusMode}
       />
 
       {/* Glowing Background Elements */}
@@ -315,22 +468,25 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         <div
           className={cn(
             "absolute top-20 left-20 w-64 h-64 rounded-full blur-[100px] bg-gradient-to-r",
-            themeColors[colorTheme].primary,
+            getThemeColors()[colorTheme].primary,
             appTheme === "dark" ? "opacity-20" : "opacity-10",
+            focusMode && "opacity-5",
           )}
         />
         <div
           className={cn(
             "absolute bottom-20 right-20 w-80 h-80 rounded-full blur-[120px] bg-gradient-to-r",
-            themeColors[colorTheme].secondary,
+            getThemeColors()[colorTheme].secondary,
             appTheme === "dark" ? "opacity-20" : "opacity-10",
+            focusMode && "opacity-5",
           )}
         />
         <div
           className={cn(
             "absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full blur-[150px] bg-gradient-to-r",
-            themeColors[colorTheme].primary,
+            getThemeColors()[colorTheme].primary,
             appTheme === "dark" ? "opacity-10" : "opacity-5",
+            focusMode && "opacity-0",
           )}
         />
       </div>

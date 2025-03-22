@@ -8,6 +8,9 @@ import {
   VolumeX,
   Bell,
   BellOff,
+  Eye,
+  EyeOff,
+  Palette,
 } from "lucide-react";
 import {
   Dialog,
@@ -27,13 +30,20 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { AppTheme } from "@/components/dashboard/DashboardLayout";
+import {
+  AppTheme,
+  ColorBlindMode,
+} from "@/components/dashboard/DashboardLayout";
 
 interface SettingsPanelProps {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   theme?: AppTheme;
   onThemeChange?: (theme: AppTheme) => void;
+  colorBlindMode?: ColorBlindMode;
+  onColorBlindModeChange?: (mode: ColorBlindMode) => void;
+  focusMode?: boolean;
+  onFocusModeChange?: (enabled: boolean) => void;
 }
 
 const themeOptions = [
@@ -49,6 +59,10 @@ const SettingsPanel = ({
   onOpenChange,
   theme = "dark",
   onThemeChange = () => {},
+  colorBlindMode = "default",
+  onColorBlindModeChange = () => {},
+  focusMode = false,
+  onFocusModeChange = () => {},
 }: SettingsPanelProps) => {
   const [darkMode, setDarkMode] = useState(theme === "dark");
   const [soundEnabled, setSoundEnabled] = useState(true);
@@ -57,16 +71,33 @@ const SettingsPanel = ({
   const [pomodoroLength, setPomodoroLength] = useState("25");
   const [shortBreakLength, setShortBreakLength] = useState("5");
   const [longBreakLength, setLongBreakLength] = useState("15");
+  const [selectedColorBlindMode, setSelectedColorBlindMode] =
+    useState(colorBlindMode);
+  const [focusModeEnabled, setFocusModeEnabled] = useState(focusMode);
 
-  // Update darkMode when theme prop changes
+  // Update state when props change
   useEffect(() => {
     setDarkMode(theme === "dark");
-  }, [theme]);
+    setSelectedColorBlindMode(colorBlindMode);
+    setFocusModeEnabled(focusMode);
+  }, [theme, colorBlindMode, focusMode]);
 
   // Handle dark mode toggle
   const handleDarkModeToggle = (checked: boolean) => {
     setDarkMode(checked);
     onThemeChange(checked ? "dark" : "light");
+  };
+
+  // Handle color blind mode change
+  const handleColorBlindModeChange = (value: string) => {
+    setSelectedColorBlindMode(value as ColorBlindMode);
+    onColorBlindModeChange(value as ColorBlindMode);
+  };
+
+  // Handle focus mode toggle
+  const handleFocusModeToggle = (checked: boolean) => {
+    setFocusModeEnabled(checked);
+    onFocusModeChange(checked);
   };
 
   return (
@@ -115,7 +146,7 @@ const SettingsPanel = ({
           <Tabs defaultValue="appearance" className="w-full">
             <TabsList
               className={cn(
-                "w-full grid grid-cols-3",
+                "w-full grid grid-cols-4",
                 theme === "dark"
                   ? "bg-gray-800 border border-gray-700"
                   : "bg-gray-100 border border-gray-200",
@@ -130,6 +161,16 @@ const SettingsPanel = ({
                 )}
               >
                 Appearance
+              </TabsTrigger>
+              <TabsTrigger
+                value="accessibility"
+                className={cn(
+                  theme === "dark"
+                    ? "data-[state=active]:bg-gray-700 data-[state=active]:text-purple-400"
+                    : "data-[state=active]:bg-white data-[state=active]:text-purple-600",
+                )}
+              >
+                Accessibility
               </TabsTrigger>
               <TabsTrigger
                 value="notifications"
@@ -275,6 +316,104 @@ const SettingsPanel = ({
                       </motion.button>
                     ))}
                   </div>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="accessibility" className="space-y-4 mt-4">
+              <div className="space-y-4">
+                <div
+                  className={cn(
+                    "flex items-center justify-between p-3 rounded-lg",
+                    theme === "dark"
+                      ? "bg-gray-800 border border-gray-700"
+                      : "bg-white border border-gray-200 shadow-sm",
+                  )}
+                >
+                  <div className="flex items-center">
+                    {focusModeEnabled ? (
+                      <EyeOff className="h-5 w-5 text-green-400 mr-2" />
+                    ) : (
+                      <Eye className="h-5 w-5 text-gray-400 mr-2" />
+                    )}
+                    <div className="flex flex-col">
+                      <span>Focus Mode</span>
+                      <span className="text-xs text-gray-500">
+                        Reduces visual stimuli and distractions
+                      </span>
+                    </div>
+                  </div>
+                  <Switch
+                    checked={focusModeEnabled}
+                    onCheckedChange={handleFocusModeToggle}
+                    className="data-[state=checked]:bg-green-500"
+                  />
+                </div>
+
+                <div
+                  className={cn(
+                    "p-3 rounded-lg",
+                    theme === "dark"
+                      ? "bg-gray-800 border border-gray-700"
+                      : "bg-white border border-gray-200 shadow-sm",
+                  )}
+                >
+                  <div className="flex items-center mb-2">
+                    <Palette
+                      className={cn(
+                        "h-5 w-5 mr-2",
+                        theme === "dark"
+                          ? "text-purple-400"
+                          : "text-purple-600",
+                      )}
+                    />
+                    <label className="block">Color Blind Mode</label>
+                  </div>
+                  <Select
+                    value={selectedColorBlindMode}
+                    onValueChange={handleColorBlindModeChange}
+                  >
+                    <SelectTrigger
+                      className={cn(
+                        "w-full",
+                        theme === "dark"
+                          ? "bg-gray-700 border-gray-600"
+                          : "bg-gray-50 border-gray-200",
+                      )}
+                    >
+                      <SelectValue placeholder="Select a color blind mode" />
+                    </SelectTrigger>
+                    <SelectContent
+                      className={cn(
+                        theme === "dark"
+                          ? "bg-gray-800 border-gray-700"
+                          : "bg-white border-gray-200",
+                      )}
+                    >
+                      <SelectItem value="default">Default</SelectItem>
+                      <SelectItem value="deuteranopia">
+                        Deuteranopia (Red-Green)
+                      </SelectItem>
+                      <SelectItem value="protanopia">
+                        Protanopia (Red-Green)
+                      </SelectItem>
+                      <SelectItem value="tritanopia">
+                        Tritanopia (Blue-Yellow)
+                      </SelectItem>
+                      <SelectItem value="monochromacy">
+                        Monochromacy (No Color)
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p
+                    className={cn(
+                      "mt-2 text-xs",
+                      theme === "dark" ? "text-gray-400" : "text-gray-500",
+                    )}
+                  >
+                    Optimizes colors for different types of color vision
+                    deficiencies across the entire application
+                  </p>
                 </div>
               </div>
             </TabsContent>

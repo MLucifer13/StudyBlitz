@@ -12,18 +12,16 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "./AuthContext";
 
 interface LoginProps {
-  onLogin?: (email: string, password: string) => void;
-  onRegisterClick?: () => void;
   theme?: "light" | "dark";
 }
 
-const Login: React.FC<LoginProps> = ({
-  onLogin = () => {},
-  onRegisterClick = () => {},
-  theme = "dark",
-}) => {
+const Login: React.FC<LoginProps> = ({ theme = "dark" }) => {
+  const navigate = useNavigate();
+  const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -37,9 +35,8 @@ const Login: React.FC<LoginProps> = ({
     setIsLoading(true);
 
     try {
-      // This would be replaced with actual backend integration
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API call
-      onLogin(email, password);
+      await login(email, password);
+      navigate("/"); // Redirect to home page after successful login
     } catch (err) {
       setError("Invalid email or password. Please try again.");
     } finally {
@@ -168,60 +165,19 @@ const Login: React.FC<LoginProps> = ({
               </Button>
             </form>
           </CardContent>
-          <CardFooter className="flex flex-col space-y-4 pt-2">
-            <div className="relative w-full flex items-center justify-center">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-800"></div>
-              </div>
-              <div className="relative bg-black px-4 text-sm text-gray-500">
-                Or continue with
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3 w-full">
-              <Button
-                variant="outline"
-                className="bg-transparent border border-gray-800 text-white hover:bg-gray-900 hover:text-white"
-              >
-                <img
-                  src="https://api.tempolabs.ai/proxy-asset?url=https://storage.googleapis.com/tempo-public-assets/google-icon.svg"
-                  alt="Google"
-                  className="h-5 w-5 mr-2"
-                />
-                Google
-              </Button>
-              <Button
-                variant="outline"
-                className="bg-transparent border border-gray-800 text-white hover:bg-gray-900 hover:text-white"
-              >
-                <img
-                  src="https://api.tempolabs.ai/proxy-asset?url=https://storage.googleapis.com/tempo-public-assets/github-icon.svg"
-                  alt="GitHub"
-                  className="h-5 w-5 mr-2"
-                />
-                GitHub
-              </Button>
-            </div>
-
-            <div className="text-center text-sm text-gray-500 mt-4">
+          <CardFooter className="flex justify-center pb-6 pt-2">
+            <p className="text-sm text-gray-400">
               Don't have an account?{" "}
-              <Button
-                variant="link"
-                onClick={onRegisterClick}
-                className="text-purple-400 hover:text-purple-300 p-0"
+              <Link
+                to="/signup"
+                className="text-purple-400 hover:text-purple-300"
               >
                 Sign up
-              </Button>
-            </div>
+              </Link>
+            </p>
           </CardFooter>
         </Card>
       </motion.div>
-
-      {/* Background Elements */}
-      <div className="fixed inset-0 -z-10 overflow-hidden">
-        <div className="absolute top-20 left-20 w-64 h-64 rounded-full blur-[100px] bg-purple-900/20 animate-pulse" />
-        <div className="absolute bottom-20 right-20 w-80 h-80 rounded-full blur-[120px] bg-blue-900/20 animate-pulse" />
-      </div>
     </div>
   );
 };
