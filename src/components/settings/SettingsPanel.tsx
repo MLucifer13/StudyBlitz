@@ -103,12 +103,14 @@ const SettingsPanel = ({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className={cn(
-          "max-w-md w-full overflow-hidden",
-          theme === "dark"
-            ? "bg-gray-900 border border-gray-800 text-white"
-            : "bg-white border border-gray-200 text-gray-900 shadow-lg",
-        )}
+        className={
+          cn(
+            "w-full overflow-hidden max-h-[90vh] overflow-y-auto",
+            theme === "dark"
+              ? "bg-gray-900 border border-gray-800 text-white"
+              : "bg-white border border-gray-200 text-gray-900 shadow-lg",
+          ) + " max-w-xl sm:max-w-xl w-[95vw] mx-auto"
+        }
       >
         <motion.div
           initial={{ opacity: 0 }}
@@ -144,182 +146,6 @@ const SettingsPanel = ({
           </DialogHeader>
 
           <Tabs defaultValue="appearance" className="w-full">
-            <TabsList
-              className={cn(
-                "w-full grid grid-cols-4",
-                theme === "dark"
-                  ? "bg-gray-800 border border-gray-700"
-                  : "bg-gray-100 border border-gray-200",
-              )}
-            >
-              <TabsTrigger
-                value="appearance"
-                className={cn(
-                  theme === "dark"
-                    ? "data-[state=active]:bg-gray-700 data-[state=active]:text-purple-400"
-                    : "data-[state=active]:bg-white data-[state=active]:text-purple-600",
-                )}
-              >
-                Appearance
-              </TabsTrigger>
-              <TabsTrigger
-                value="accessibility"
-                className={cn(
-                  theme === "dark"
-                    ? "data-[state=active]:bg-gray-700 data-[state=active]:text-purple-400"
-                    : "data-[state=active]:bg-white data-[state=active]:text-purple-600",
-                )}
-              >
-                Accessibility
-              </TabsTrigger>
-              <TabsTrigger
-                value="notifications"
-                className={cn(
-                  theme === "dark"
-                    ? "data-[state=active]:bg-gray-700 data-[state=active]:text-purple-400"
-                    : "data-[state=active]:bg-white data-[state=active]:text-purple-600",
-                )}
-              >
-                Notifications
-              </TabsTrigger>
-              <TabsTrigger
-                value="timer"
-                className={cn(
-                  theme === "dark"
-                    ? "data-[state=active]:bg-gray-700 data-[state=active]:text-purple-400"
-                    : "data-[state=active]:bg-white data-[state=active]:text-purple-600",
-                )}
-              >
-                Timer
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="appearance" className="space-y-4 mt-4">
-              <div className="space-y-4">
-                <div
-                  className={cn(
-                    "flex items-center justify-between p-3 rounded-lg",
-                    theme === "dark"
-                      ? "bg-gray-800 border border-gray-700"
-                      : "bg-white border border-gray-200 shadow-sm",
-                  )}
-                >
-                  <div className="flex items-center">
-                    {darkMode ? (
-                      <Moon className="h-5 w-5 text-purple-400 mr-2" />
-                    ) : (
-                      <Sun className="h-5 w-5 text-yellow-500 mr-2" />
-                    )}
-                    <span>{darkMode ? "Dark Mode" : "Light Mode"}</span>
-                  </div>
-                  <Switch
-                    checked={darkMode}
-                    onCheckedChange={handleDarkModeToggle}
-                    className="data-[state=checked]:bg-purple-500"
-                  />
-                </div>
-
-                <div
-                  className={cn(
-                    "p-3 rounded-lg",
-                    theme === "dark"
-                      ? "bg-gray-800 border border-gray-700"
-                      : "bg-white border border-gray-200 shadow-sm",
-                  )}
-                >
-                  <label className="block mb-2">Theme Color</label>
-                  <Select
-                    value={selectedTheme}
-                    onValueChange={setSelectedTheme}
-                  >
-                    <SelectTrigger
-                      className={cn(
-                        "w-full",
-                        theme === "dark"
-                          ? "bg-gray-700 border-gray-600"
-                          : "bg-gray-50 border-gray-200",
-                      )}
-                    >
-                      <SelectValue placeholder="Select a theme" />
-                    </SelectTrigger>
-                    <SelectContent
-                      className={cn(
-                        theme === "dark"
-                          ? "bg-gray-800 border-gray-700"
-                          : "bg-white border-gray-200",
-                      )}
-                    >
-                      {themeOptions.map((themeOption) => (
-                        <SelectItem
-                          key={themeOption.value}
-                          value={themeOption.value}
-                          className={cn(
-                            theme === "dark"
-                              ? "focus:bg-gray-700 focus:text-white"
-                              : "focus:bg-gray-100 focus:text-gray-900",
-                          )}
-                        >
-                          <div className="flex items-center">
-                            <div
-                              className="w-4 h-4 rounded-full mr-2"
-                              style={{ backgroundColor: themeOption.color }}
-                            />
-                            {themeOption.label}
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div
-                  className={cn(
-                    "p-3 rounded-lg",
-                    theme === "dark"
-                      ? "bg-gray-800 border border-gray-700"
-                      : "bg-white border border-gray-200 shadow-sm",
-                  )}
-                >
-                  <div className="grid grid-cols-3 gap-2">
-                    {themeOptions.map((themeOption) => (
-                      <motion.button
-                        key={themeOption.value}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        className={cn(
-                          "p-2 rounded-md transition-all",
-                          theme === "dark"
-                            ? "border border-gray-700"
-                            : "border border-gray-200",
-                          selectedTheme === themeOption.value
-                            ? theme === "dark"
-                              ? "ring-2 ring-offset-2 ring-offset-gray-900"
-                              : "ring-2 ring-offset-2 ring-offset-white"
-                            : "",
-                        )}
-                        style={{
-                          boxShadow:
-                            selectedTheme === themeOption.value
-                              ? `0 0 10px ${themeOption.color}`
-                              : "none",
-                          borderColor: themeOption.color,
-                        }}
-                        onClick={() => setSelectedTheme(themeOption.value)}
-                      >
-                        <div
-                          className="w-full h-8 rounded-md"
-                          style={{
-                            backgroundColor: themeOption.color,
-                            opacity: 0.8,
-                          }}
-                        />
-                      </motion.button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </TabsContent>
-
             <TabsContent value="accessibility" className="space-y-4 mt-4">
               <div className="space-y-4">
                 <div
@@ -417,7 +243,6 @@ const SettingsPanel = ({
                 </div>
               </div>
             </TabsContent>
-
             <TabsContent value="notifications" className="space-y-4 mt-4">
               <div className="space-y-4">
                 <div
@@ -491,7 +316,6 @@ const SettingsPanel = ({
                 </div>
               </div>
             </TabsContent>
-
             <TabsContent value="timer" className="space-y-4 mt-4">
               <div className="space-y-4">
                 <div
@@ -655,6 +479,47 @@ const SettingsPanel = ({
                 </div>
               </div>
             </TabsContent>
+            <TabsList
+              className={cn(
+                "w-full grid grid-cols-3",
+                theme === "dark"
+                  ? "bg-gray-800 border border-gray-700"
+                  : "bg-gray-100 border border-gray-200",
+              )}
+            >
+              <TabsTrigger
+                value="accessibility"
+                className={cn(
+                  theme === "dark"
+                    ? "data-[state=active]:bg-gray-700 data-[state=active]:text-purple-400"
+                    : "data-[state=active]:bg-white data-[state=active]:text-purple-600",
+                )}
+              >
+                Accessibility
+              </TabsTrigger>
+              <TabsTrigger
+                value="notifications"
+                className={cn(
+                  theme === "dark"
+                    ? "data-[state=active]:bg-gray-700 data-[state=active]:text-purple-400"
+                    : "data-[state=active]:bg-white data-[state=active]:text-purple-600",
+                )}
+              >
+                Notifications
+              </TabsTrigger>
+              <TabsTrigger
+                value="timer"
+                className={
+                  cn(
+                    theme === "dark"
+                      ? "data-[state=active]:bg-gray-700 data-[state=active]:text-purple-400"
+                      : "data-[state=active]:bg-white data-[state=active]:text-purple-600",
+                  ) + " justify-center items-center  flex-col-reverse"
+                }
+              >
+                Timer
+              </TabsTrigger>
+            </TabsList>
           </Tabs>
 
           <DialogFooter className="mt-6">

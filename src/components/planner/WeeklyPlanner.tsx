@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,7 +21,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Edit, Trash2, Calendar } from "lucide-react";
+import { Plus, Edit, Trash2, Calendar, Loader2 } from "lucide-react";
+import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/components/auth/AuthContext";
+import { useToast } from "@/components/ui/use-toast";
 
 interface Event {
   id: string;
@@ -30,6 +33,7 @@ interface Event {
   day: string;
   time: string;
   color: string;
+  user_id?: string;
 }
 
 interface WeeklyPlannerProps {
@@ -104,16 +108,14 @@ const DEFAULT_EVENTS: Event[] = [
 ];
 
 const WeeklyPlanner: React.FC<WeeklyPlannerProps> = ({
-  events = DEFAULT_EVENTS,
-  onAddEvent = () => {},
-  onEditEvent = () => {},
-  onDeleteEvent = () => {},
   theme = "dark",
   colorBlindMode = "default",
 }) => {
+  const [events, setEvents] = useState<Event[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [isAddEventOpen, setIsAddEventOpen] = useState(false);
   const [isEditEventOpen, setIsEditEventOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [newEvent, setNewEvent] = useState<Omit<Event, "id">>({
     title: "",
     description: "",
@@ -122,30 +124,215 @@ const WeeklyPlanner: React.FC<WeeklyPlannerProps> = ({
     color: "purple",
   });
 
-  const handleAddEvent = () => {
-    onAddEvent(newEvent);
-    setNewEvent({
-      title: "",
-      description: "",
-      day: DAYS_OF_WEEK[0],
-      time: TIME_SLOTS[0],
-      color: "purple",
-    });
-    setIsAddEventOpen(false);
-  };
+  const { user } = useAuth();
+  const { toast } = useToast();
 
-  const handleEditEvent = () => {
-    if (selectedEvent) {
-      onEditEvent(selectedEvent);
-      setSelectedEvent(null);
-      setIsEditEventOpen(false);
+  // Fetch events from Supabase
+  useEffect(() => {
+    const fetchEvents = async () => {
+      if (!user) {
+        setEvents(DEFAULT_EVENTS);
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        setIsLoading(true);
+        const { data, error } = await supabase
+          .from("events")
+          .select("*")
+          .eq("user_id", user.id);
+
+        if (error) throw error;
+
+        if (data && data.length > 0) {
+          setEvents(data);
+        } else {
+          // If no events found, create default events for the user
+          const defaultEventsWithUserId = DEFAULT_EVENTS.map((event) => ({
+            ...event,
+            user_id: user.id,
+          }));
+
+          // Insert default events
+          for (const event of defaultEventsWithUserId) {
+            const { id, ...eventWithoutId } = event;
+            await supabase.from("events").insert(eventWithoutId);
+          }
+
+          // Fetch again to get the inserted events with their IDs
+          const { data: newData } = await supabase
+            .from("events")
+            .select("*")
+            .eq("user_id", user.id);
+
+          if (newData) setEvents(newData);
+        }
+      } catch (error) {
+        console.error("Error fetching events:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load events. Using default events instead.",
+          variant: "destructive",
+        });
+        setEvents(DEFAULT_EVENTS);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchEvents();
+
+    // Set up realtime subscription
+    const eventsSubscription = supabase
+      .channel("events-changes")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "events" },
+        (payload) => {
+          if (user && payload.new.user_id === user.id) {
+            // Refresh events when changes occur
+            fetchEvents();
+          }
+        },
+      )
+      .subscribe();
+
+    return () => {
+      eventsSubscription.unsubscribe();
+    };
+  }, [user]);
+
+  const handleAddEvent = async () => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to add events.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!newEvent.title.trim()) {
+      toast({
+        title: "Error",
+        description: "Event title is required.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const eventToAdd = {
+        ...newEvent,
+        user_id: user.id,
+      };
+
+      const { data, error } = await supabase
+        .from("events")
+        .insert(eventToAdd)
+        .select();
+
+      if (error) throw error;
+
+      if (data) {
+        setEvents([...events, data[0]]);
+        toast({
+          title: "Success",
+          description: "Event added successfully.",
+        });
+      }
+
+      setNewEvent({
+        title: "",
+        description: "",
+        day: DAYS_OF_WEEK[0],
+        time: TIME_SLOTS[0],
+        color: "purple",
+      });
+      setIsAddEventOpen(false);
+    } catch (error) {
+      console.error("Error adding event:", error);
+      toast({
+        title: "Error",
+        description: "Failed to add event.",
+        variant: "destructive",
+      });
     }
   };
 
-  const handleDeleteEvent = (id: string) => {
-    onDeleteEvent(id);
-    setSelectedEvent(null);
-    setIsEditEventOpen(false);
+  const handleEditEvent = async () => {
+    if (!user || !selectedEvent) return;
+
+    try {
+      const { error } = await supabase
+        .from("events")
+        .update({
+          title: selectedEvent.title,
+          description: selectedEvent.description,
+          day: selectedEvent.day,
+          time: selectedEvent.time,
+          color: selectedEvent.color,
+        })
+        .eq("id", selectedEvent.id)
+        .eq("user_id", user.id);
+
+      if (error) throw error;
+
+      // Update local state
+      setEvents(
+        events.map((event) =>
+          event.id === selectedEvent.id ? selectedEvent : event,
+        ),
+      );
+
+      toast({
+        title: "Success",
+        description: "Event updated successfully.",
+      });
+
+      setSelectedEvent(null);
+      setIsEditEventOpen(false);
+    } catch (error) {
+      console.error("Error updating event:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update event.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteEvent = async (id: string) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from("events")
+        .delete()
+        .eq("id", id)
+        .eq("user_id", user.id);
+
+      if (error) throw error;
+
+      // Update local state
+      setEvents(events.filter((event) => event.id !== id));
+
+      toast({
+        title: "Success",
+        description: "Event deleted successfully.",
+      });
+
+      setSelectedEvent(null);
+      setIsEditEventOpen(false);
+    } catch (error) {
+      console.error("Error deleting event:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete event.",
+        variant: "destructive",
+      });
+    }
   };
 
   const getEventsByDay = (day: string) => {
@@ -296,7 +483,7 @@ const WeeklyPlanner: React.FC<WeeklyPlannerProps> = ({
       <CardHeader
         className={`flex flex-row justify-between items-center border-b ${theme === "light" ? "bg-gray-50 border-gray-200" : "bg-gray-900 border-gray-800"}`}
       >
-        <CardTitle className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-blue-400 to-pink-400">
+        <CardTitle className="text-xl sm:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-blue-400 to-pink-400">
           Weekly Planner
         </CardTitle>
         <Dialog open={isAddEventOpen} onOpenChange={setIsAddEventOpen}>
@@ -360,7 +547,7 @@ const WeeklyPlanner: React.FC<WeeklyPlannerProps> = ({
                   }
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="grid gap-2">
                   <Label
                     htmlFor="day"
@@ -383,7 +570,7 @@ const WeeklyPlanner: React.FC<WeeklyPlannerProps> = ({
                           : "bg-gray-800 border-gray-700 text-white"
                       }
                     >
-                      <SelectValue placeholder="Select day" />
+                      <SelectValue>{newEvent.day}</SelectValue>
                     </SelectTrigger>
                     <SelectContent
                       className={
@@ -422,7 +609,7 @@ const WeeklyPlanner: React.FC<WeeklyPlannerProps> = ({
                           : "bg-gray-800 border-gray-700 text-white"
                       }
                     >
-                      <SelectValue placeholder="Select time" />
+                      <SelectValue>{newEvent.time}</SelectValue>
                     </SelectTrigger>
                     <SelectContent
                       className={
@@ -460,7 +647,10 @@ const WeeklyPlanner: React.FC<WeeklyPlannerProps> = ({
                         : "bg-gray-800 border-gray-700 text-white"
                     }
                   >
-                    <SelectValue placeholder="Select color" />
+                    <SelectValue>
+                      {COLOR_OPTIONS.find((c) => c.value === newEvent.color)
+                        ?.label || "Select color"}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent
                     className={
@@ -502,48 +692,132 @@ const WeeklyPlanner: React.FC<WeeklyPlannerProps> = ({
         </Dialog>
       </CardHeader>
       <CardContent className="p-0 overflow-auto max-h-[calc(100%-80px)]">
-        <div
-          className={`grid grid-cols-7 sticky top-0 z-10 border-b ${theme === "light" ? "bg-gray-50 border-gray-200" : "bg-gray-900 border-gray-800"}`}
-        >
-          {DAYS_OF_WEEK.map((day) => (
-            <div
-              key={day}
-              className={`p-3 text-center font-medium ${theme === "light" ? "text-gray-700" : "text-gray-300"}`}
-            >
-              {day}
+        {isLoading ? (
+          <div className="flex items-center justify-center h-64">
+            <Loader2 className="h-8 w-8 animate-spin text-purple-500" />
+            <span className="ml-2 text-lg">Loading events...</span>
+          </div>
+        ) : (
+          <>
+            {/* Desktop View */}
+            <div className="hidden md:block">
+              <div
+                className={`grid grid-cols-7 sticky top-0 z-10 border-b ${theme === "light" ? "bg-gray-50 border-gray-200" : "bg-gray-900 border-gray-800"}`}
+              >
+                {DAYS_OF_WEEK.map((day) => (
+                  <div
+                    key={day}
+                    className={`p-3 text-center font-medium ${theme === "light" ? "text-gray-700" : "text-gray-300"}`}
+                  >
+                    {day}
+                  </div>
+                ))}
+              </div>
+              <div
+                className={`grid grid-cols-7 gap-1 p-2 ${theme === "light" ? "bg-gray-50" : "bg-gray-950"}`}
+              >
+                {DAYS_OF_WEEK.map((day) => (
+                  <div
+                    key={day}
+                    className={`min-h-[400px] border rounded-md p-2 ${theme === "light" ? "border-gray-200" : "border-gray-800"}`}
+                  >
+                    {getEventsByDay(day).map((event) => (
+                      <div
+                        key={event.id}
+                        className={cn(
+                          "mb-2 p-2 rounded-md border text-sm relative transition-all duration-300 hover:scale-[1.02] cursor-pointer",
+                          getColorClass(event.color),
+                        )}
+                        onClick={() => {
+                          setSelectedEvent(event);
+                          setIsEditEventOpen(true);
+                        }}
+                      >
+                        <div className="font-medium">{event.title}</div>
+                        <div className="text-xs opacity-80 flex items-center mt-1">
+                          <Calendar className="h-3 w-3 mr-1" />
+                          {event.time}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
             </div>
-          ))}
-        </div>
-        <div
-          className={`grid grid-cols-7 gap-1 p-2 ${theme === "light" ? "bg-gray-50" : "bg-gray-950"}`}
-        >
-          {DAYS_OF_WEEK.map((day) => (
-            <div
-              key={day}
-              className={`min-h-[400px] border rounded-md p-2 ${theme === "light" ? "border-gray-200" : "border-gray-800"}`}
-            >
-              {getEventsByDay(day).map((event) => (
-                <div
-                  key={event.id}
-                  className={cn(
-                    "mb-2 p-2 rounded-md border text-sm relative transition-all duration-300 hover:scale-[1.02] cursor-pointer",
-                    getColorClass(event.color),
-                  )}
-                  onClick={() => {
-                    setSelectedEvent(event);
-                    setIsEditEventOpen(true);
+
+            {/* Mobile View */}
+            <div className="md:hidden">
+              <div
+                className={`flex justify-between items-center sticky top-0 z-10 border-b p-3 ${theme === "light" ? "bg-gray-50 border-gray-200" : "bg-gray-900 border-gray-800"}`}
+              >
+                <Select
+                  value={newEvent.day}
+                  onValueChange={(value) => {
+                    setNewEvent({ ...newEvent, day: value });
                   }}
                 >
-                  <div className="font-medium">{event.title}</div>
-                  <div className="text-xs opacity-80 flex items-center mt-1">
-                    <Calendar className="h-3 w-3 mr-1" />
-                    {event.time}
+                  <SelectTrigger
+                    className={`w-full ${theme === "light" ? "bg-gray-50 border-gray-300" : "bg-gray-800 border-gray-700"}`}
+                  >
+                    <SelectValue>Select Day</SelectValue>
+                  </SelectTrigger>
+                  <SelectContent
+                    className={theme === "light" ? "bg-white" : "bg-gray-800"}
+                  >
+                    {DAYS_OF_WEEK.map((day) => (
+                      <SelectItem key={day} value={day}>
+                        {day}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div
+                className={`p-3 ${theme === "light" ? "bg-gray-50" : "bg-gray-950"}`}
+              >
+                {DAYS_OF_WEEK.map((day) => (
+                  <div
+                    key={day}
+                    className={`${newEvent.day === day ? "block" : "hidden"} border rounded-md p-3 mb-3 ${theme === "light" ? "border-gray-200" : "border-gray-800"}`}
+                  >
+                    <h3
+                      className={`text-lg font-medium mb-3 ${theme === "light" ? "text-gray-800" : "text-white"}`}
+                    >
+                      {day}
+                    </h3>
+                    {getEventsByDay(day).length > 0 ? (
+                      getEventsByDay(day).map((event) => (
+                        <div
+                          key={event.id}
+                          className={cn(
+                            "mb-3 p-3 rounded-md border text-sm relative transition-all duration-300 active:scale-[0.98] cursor-pointer",
+                            getColorClass(event.color),
+                          )}
+                          onClick={() => {
+                            setSelectedEvent(event);
+                            setIsEditEventOpen(true);
+                          }}
+                        >
+                          <div className="font-medium text-base">
+                            {event.title}
+                          </div>
+                          <div className="text-sm opacity-80 flex items-center mt-2">
+                            <Calendar className="h-4 w-4 mr-2" />
+                            {event.time}
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center py-6 text-gray-500">
+                        No events for {day}
+                      </div>
+                    )}
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          ))}
-        </div>
+          </>
+        )}
       </CardContent>
 
       {/* Edit Event Dialog */}
@@ -609,7 +883,7 @@ const WeeklyPlanner: React.FC<WeeklyPlannerProps> = ({
                   }
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="grid gap-2">
                   <Label
                     htmlFor="edit-day"
@@ -632,7 +906,7 @@ const WeeklyPlanner: React.FC<WeeklyPlannerProps> = ({
                           : "bg-gray-800 border-gray-700 text-white"
                       }
                     >
-                      <SelectValue placeholder="Select day" />
+                      <SelectValue>{selectedEvent.day}</SelectValue>
                     </SelectTrigger>
                     <SelectContent
                       className={
@@ -671,7 +945,7 @@ const WeeklyPlanner: React.FC<WeeklyPlannerProps> = ({
                           : "bg-gray-800 border-gray-700 text-white"
                       }
                     >
-                      <SelectValue placeholder="Select time" />
+                      <SelectValue>{selectedEvent.time}</SelectValue>
                     </SelectTrigger>
                     <SelectContent
                       className={
@@ -709,7 +983,11 @@ const WeeklyPlanner: React.FC<WeeklyPlannerProps> = ({
                         : "bg-gray-800 border-gray-700 text-white"
                     }
                   >
-                    <SelectValue placeholder="Select color" />
+                    <SelectValue>
+                      {COLOR_OPTIONS.find(
+                        (c) => c.value === selectedEvent.color,
+                      )?.label || "Select color"}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent
                     className={

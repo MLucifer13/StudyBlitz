@@ -54,7 +54,7 @@ const TimeDisplay: React.FC<TimeDisplayProps> = ({
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
           className={cn(
-            "text-lg font-medium",
+            "text-base sm:text-lg font-medium",
             theme === "dark" ? "text-white" : "text-gray-900",
           )}
         >

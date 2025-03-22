@@ -252,7 +252,7 @@ const PomodoroTimer = ({
       )}
     >
       {/* Timer Display */}
-      <div className="relative w-64 h-64 mb-6">
+      <div className="relative w-56 h-56 sm:w-64 sm:h-64 mb-6">
         {/* Background Circle */}
         <div
           className={`absolute inset-0 rounded-full border-4 opacity-30 ${theme === "light" ? "border-gray-300" : "border-gray-800"}`}
@@ -319,7 +319,7 @@ const PomodoroTimer = ({
         {/* Timer Text */}
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <motion.div
-            className={`text-5xl font-bold bg-gradient-to-r ${getModeColor()} bg-clip-text text-transparent drop-shadow-[0_0_8px_rgba(139,92,246,0.5)]`}
+            className={`text-4xl sm:text-5xl font-bold bg-gradient-to-r ${getModeColor()} bg-clip-text text-transparent drop-shadow-[0_0_8px_rgba(139,92,246,0.5)]`}
             initial={{ scale: 1 }}
             animate={{ scale: [1, 1.05, 1] }}
             transition={{
@@ -346,16 +346,19 @@ const PomodoroTimer = ({
           </div>
         </div>
       </div>
-
       {/* Controls */}
       <div className="flex gap-3 mb-6">
         <Button
           onClick={toggleTimer}
           size="lg"
-          className={`relative rounded-full w-16 h-16 ${isRunning ? "bg-gradient-to-r from-pink-600 to-red-600 hover:from-pink-700 hover:to-red-700" : "bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"} shadow-[0_0_20px_rgba(139,92,246,0.6)] transition-all duration-300 overflow-hidden group`}
+          className={`relative rounded-full w-9 h-9 ${isRunning ? "bg-gradient-to-r from-pink-600 to-red-600 hover:from-pink-700 hover:to-red-700" : "bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"} shadow-[0_0_20px_rgba(139,92,246,0.6)] transition-all duration-300 overflow-hidden group`}
         >
           <span className="absolute inset-0 bg-black opacity-0 group-hover:opacity-10 transition-opacity duration-300 rounded-full"></span>
-          <span className="absolute -inset-1 bg-gradient-to-r from-purple-500 to-pink-500 opacity-0 group-hover:opacity-30 blur-md transition-opacity duration-300 rounded-full animate-pulse"></span>
+          <span className="absolute -inset-1 bg-gradient-to-r from-purple-500 to-pink-500 opacity-0 group-hover:opacity-30 blur-md transition-opacity duration-300 rounded-full animate-pulse">
+            <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl">
+              Header 1
+            </h1>
+          </span>
           {isRunning ? (
             <Pause className="w-7 h-7 relative z-10" />
           ) : (
@@ -379,9 +382,8 @@ const PomodoroTimer = ({
           <Settings className="w-4 h-4" />
         </Button>
       </div>
-
       {/* Mode Selector */}
-      <div className="flex gap-2 mb-6">
+      <div className="flex flex-wrap justify-center gap-2 mb-6">
         <Button
           onClick={() => {
             setMode("focus");
@@ -416,7 +418,6 @@ const PomodoroTimer = ({
           Long Break
         </Button>
       </div>
-
       {/* Settings Panel */}
       {showSettings && (
         <motion.div

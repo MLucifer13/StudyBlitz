@@ -171,7 +171,7 @@ const TodoList = ({
         </CardTitle>
       </CardHeader>
       <CardContent className="p-4 space-y-4">
-        <div className="flex space-x-2">
+        <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
           <Input
             type="text"
             placeholder="Add a new task..."
@@ -185,33 +185,35 @@ const TodoList = ({
             )}
             onKeyDown={(e) => e.key === "Enter" && handleAddTodo()}
           />
-          <div className="flex space-x-1">
-            {["low", "medium", "high"].map((priority) => (
-              <Button
-                key={priority}
-                type="button"
-                variant="outline"
-                size="icon"
-                className={cn(
-                  "w-8 h-8 rounded-full border-2",
-                  priorityColors[priority as Priority],
-                  newTodoPriority === priority &&
-                    priorityGlow[priority as Priority],
-                )}
-                onClick={() => setNewTodoPriority(priority as Priority)}
-              />
-            ))}
+          <div className="flex justify-between sm:justify-start">
+            <div className="flex space-x-1">
+              {["low", "medium", "high"].map((priority) => (
+                <Button
+                  key={priority}
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className={cn(
+                    "w-8 h-8 rounded-full border-2",
+                    priorityColors[priority as Priority],
+                    newTodoPriority === priority &&
+                      priorityGlow[priority as Priority],
+                  )}
+                  onClick={() => setNewTodoPriority(priority as Priority)}
+                />
+              ))}
+            </div>
+            <Button
+              type="button"
+              onClick={handleAddTodo}
+              className="bg-blue-600 hover:bg-blue-700 text-white shadow-[0_0_10px_rgba(59,130,246,0.5)] hover:shadow-[0_0_15px_rgba(59,130,246,0.8)] ml-2"
+            >
+              <PlusCircle className="w-5 h-5" />
+            </Button>
           </div>
-          <Button
-            type="button"
-            onClick={handleAddTodo}
-            className="bg-blue-600 hover:bg-blue-700 text-white shadow-[0_0_10px_rgba(59,130,246,0.5)] hover:shadow-[0_0_15px_rgba(59,130,246,0.8)]"
-          >
-            <PlusCircle className="w-5 h-5" />
-          </Button>
         </div>
 
-        <div className="space-y-2 max-h-[400px] overflow-y-auto pr-1">
+        <div className="space-y-2 max-h-[350px] sm:max-h-[400px] overflow-y-auto pr-1">
           <AnimatePresence>
             {displayTodos.map((todo) => (
               <motion.div
