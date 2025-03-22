@@ -19,6 +19,13 @@ interface PomodoroTimerProps {
   initialCycles?: number;
   onTimerComplete?: () => void;
   className?: string;
+  theme?: "light" | "dark";
+  colorBlindMode?:
+    | "default"
+    | "deuteranopia"
+    | "protanopia"
+    | "tritanopia"
+    | "monochromacy";
 }
 
 const PomodoroTimer = ({
@@ -28,6 +35,8 @@ const PomodoroTimer = ({
   initialCycles = 4,
   onTimerComplete = () => {},
   className,
+  theme = "dark",
+  colorBlindMode = "default",
 }: PomodoroTimerProps) => {
   // Timer states
   const [focusTime, setFocusTime] = useState(initialFocusTime);
@@ -153,8 +162,12 @@ const PomodoroTimer = ({
     return ((totalSeconds - timeLeft) / totalSeconds) * 100;
   };
 
-  // Get color based on current mode
+  // Get color based on current mode and color blind mode
   const getModeColor = () => {
+    if (colorBlindMode !== "default") {
+      return getColorBlindModeColor(mode, colorBlindMode);
+    }
+
     switch (mode) {
       case "focus":
         return "from-purple-500 to-blue-500";
@@ -167,17 +180,83 @@ const PomodoroTimer = ({
     }
   };
 
+  // Get color for color blind modes
+  const getColorBlindModeColor = (timerMode: string, blindMode: string) => {
+    switch (blindMode) {
+      case "deuteranopia":
+        switch (timerMode) {
+          case "focus":
+            return "from-blue-500 to-blue-700";
+          case "break":
+            return "from-teal-400 to-teal-600";
+          case "longBreak":
+            return "from-orange-400 to-orange-600";
+          default:
+            return "from-blue-500 to-blue-700";
+        }
+      case "protanopia":
+        switch (timerMode) {
+          case "focus":
+            return "from-blue-500 to-purple-600";
+          case "break":
+            return "from-cyan-400 to-cyan-600";
+          case "longBreak":
+            return "from-yellow-400 to-yellow-600";
+          default:
+            return "from-blue-500 to-purple-600";
+        }
+      case "tritanopia":
+        switch (timerMode) {
+          case "focus":
+            return "from-pink-500 to-red-500";
+          case "break":
+            return "from-green-400 to-green-600";
+          case "longBreak":
+            return "from-red-400 to-red-600";
+          default:
+            return "from-pink-500 to-red-500";
+        }
+      case "monochromacy":
+        switch (timerMode) {
+          case "focus":
+            return "from-gray-500 to-gray-700";
+          case "break":
+            return "from-gray-400 to-gray-600";
+          case "longBreak":
+            return "from-gray-300 to-gray-500";
+          default:
+            return "from-gray-500 to-gray-700";
+        }
+      default:
+        switch (timerMode) {
+          case "focus":
+            return "from-purple-500 to-blue-500";
+          case "break":
+            return "from-green-400 to-cyan-500";
+          case "longBreak":
+            return "from-pink-500 to-purple-500";
+          default:
+            return "from-purple-500 to-blue-500";
+        }
+    }
+  };
+
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center p-6 rounded-xl bg-black/90 border border-gray-800",
+        "flex flex-col items-center justify-center p-6 rounded-xl border",
+        theme === "light"
+          ? "bg-white/90 border-gray-200 text-gray-900"
+          : "bg-black/90 border-gray-800 text-white",
         className,
       )}
     >
       {/* Timer Display */}
       <div className="relative w-64 h-64 mb-6">
         {/* Background Circle */}
-        <div className="absolute inset-0 rounded-full border-4 border-gray-800 opacity-30" />
+        <div
+          className={`absolute inset-0 rounded-full border-4 opacity-30 ${theme === "light" ? "border-gray-300" : "border-gray-800"}`}
+        />
 
         {/* Progress Circle */}
         <svg
@@ -251,14 +330,18 @@ const PomodoroTimer = ({
           >
             {formatTime(timeLeft)}
           </motion.div>
-          <div className="mt-2 text-sm font-medium uppercase tracking-wider text-gray-400">
+          <div
+            className={`mt-2 text-sm font-medium uppercase tracking-wider ${theme === "light" ? "text-gray-600" : "text-gray-400"}`}
+          >
             {mode === "focus"
               ? "Focus Time"
               : mode === "break"
                 ? "Short Break"
                 : "Long Break"}
           </div>
-          <div className="mt-1 text-xs text-gray-500">
+          <div
+            className={`mt-1 text-xs ${theme === "light" ? "text-gray-500" : "text-gray-500"}`}
+          >
             Cycle {currentCycle} of {cycles}
           </div>
         </div>
@@ -281,7 +364,7 @@ const PomodoroTimer = ({
           onClick={resetTimer}
           size="icon"
           variant="outline"
-          className="rounded-full w-10 h-10 border-gray-700 bg-gray-900 hover:bg-gray-800 shadow-[0_0_10px_rgba(139,92,246,0.3)]"
+          className={`rounded-full w-10 h-10 shadow-[0_0_10px_rgba(139,92,246,0.3)] ${theme === "light" ? "border-gray-300 bg-gray-100 hover:bg-gray-200" : "border-gray-700 bg-gray-900 hover:bg-gray-800"}`}
         >
           <RotateCcw className="w-4 h-4" />
         </Button>
@@ -289,7 +372,7 @@ const PomodoroTimer = ({
           onClick={() => setShowSettings(!showSettings)}
           size="icon"
           variant="outline"
-          className="rounded-full w-10 h-10 border-gray-700 bg-gray-900 hover:bg-gray-800 shadow-[0_0_10px_rgba(139,92,246,0.3)]"
+          className={`rounded-full w-10 h-10 shadow-[0_0_10px_rgba(139,92,246,0.3)] ${theme === "light" ? "border-gray-300 bg-gray-100 hover:bg-gray-200" : "border-gray-700 bg-gray-900 hover:bg-gray-800"}`}
         >
           <Settings className="w-4 h-4" />
         </Button>
@@ -304,7 +387,7 @@ const PomodoroTimer = ({
           }}
           variant={mode === "focus" ? "default" : "outline"}
           size="sm"
-          className={`${mode === "focus" ? "bg-purple-600 hover:bg-purple-700 shadow-[0_0_10px_rgba(139,92,246,0.5)]" : "border-gray-700 bg-gray-900 hover:bg-gray-800"}`}
+          className={`${mode === "focus" ? "bg-purple-600 hover:bg-purple-700 shadow-[0_0_10px_rgba(139,92,246,0.5)]" : theme === "light" ? "border-gray-300 bg-gray-100 hover:bg-gray-200" : "border-gray-700 bg-gray-900 hover:bg-gray-800"}`}
         >
           Focus
         </Button>
@@ -315,7 +398,7 @@ const PomodoroTimer = ({
           }}
           variant={mode === "break" ? "default" : "outline"}
           size="sm"
-          className={`${mode === "break" ? "bg-cyan-600 hover:bg-cyan-700 shadow-[0_0_10px_rgba(6,182,212,0.5)]" : "border-gray-700 bg-gray-900 hover:bg-gray-800"}`}
+          className={`${mode === "break" ? "bg-cyan-600 hover:bg-cyan-700 shadow-[0_0_10px_rgba(6,182,212,0.5)]" : theme === "light" ? "border-gray-300 bg-gray-100 hover:bg-gray-200" : "border-gray-700 bg-gray-900 hover:bg-gray-800"}`}
         >
           Break
         </Button>
@@ -326,7 +409,7 @@ const PomodoroTimer = ({
           }}
           variant={mode === "longBreak" ? "default" : "outline"}
           size="sm"
-          className={`${mode === "longBreak" ? "bg-pink-600 hover:bg-pink-700 shadow-[0_0_10px_rgba(236,72,153,0.5)]" : "border-gray-700 bg-gray-900 hover:bg-gray-800"}`}
+          className={`${mode === "longBreak" ? "bg-pink-600 hover:bg-pink-700 shadow-[0_0_10px_rgba(236,72,153,0.5)]" : theme === "light" ? "border-gray-300 bg-gray-100 hover:bg-gray-200" : "border-gray-700 bg-gray-900 hover:bg-gray-800"}`}
         >
           Long Break
         </Button>
@@ -335,19 +418,23 @@ const PomodoroTimer = ({
       {/* Settings Panel */}
       {showSettings && (
         <motion.div
-          className="w-full p-4 rounded-lg bg-gray-900/80 border border-gray-800 backdrop-blur-sm"
+          className={`w-full p-4 rounded-lg backdrop-blur-sm ${theme === "light" ? "bg-gray-50/80 border border-gray-200" : "bg-gray-900/80 border border-gray-800"}`}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 20 }}
           transition={{ duration: 0.2 }}
         >
-          <h3 className="text-sm font-medium text-gray-300 mb-4">
+          <h3
+            className={`text-sm font-medium mb-4 ${theme === "light" ? "text-gray-700" : "text-gray-300"}`}
+          >
             Timer Settings
           </h3>
 
           <div className="space-y-4">
             <div className="space-y-2">
-              <label className="text-xs text-gray-400">
+              <label
+                className={`text-xs ${theme === "light" ? "text-gray-600" : "text-gray-400"}`}
+              >
                 Focus Time (minutes): {focusTime}
               </label>
               <Slider
@@ -361,7 +448,9 @@ const PomodoroTimer = ({
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs text-gray-400">
+              <label
+                className={`text-xs ${theme === "light" ? "text-gray-600" : "text-gray-400"}`}
+              >
                 Break Time (minutes): {breakTime}
               </label>
               <Slider
@@ -375,7 +464,9 @@ const PomodoroTimer = ({
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs text-gray-400">
+              <label
+                className={`text-xs ${theme === "light" ? "text-gray-600" : "text-gray-400"}`}
+              >
                 Long Break Time (minutes): {longBreakTime}
               </label>
               <Slider
@@ -389,17 +480,27 @@ const PomodoroTimer = ({
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs text-gray-400">
+              <label
+                className={`text-xs ${theme === "light" ? "text-gray-600" : "text-gray-400"}`}
+              >
                 Cycles before Long Break
               </label>
               <Select
                 value={cycles.toString()}
                 onValueChange={(value) => setCycles(parseInt(value))}
               >
-                <SelectTrigger className="w-full bg-gray-800 border-gray-700">
+                <SelectTrigger
+                  className={`w-full ${theme === "light" ? "bg-gray-50 border-gray-300" : "bg-gray-800 border-gray-700"}`}
+                >
                   <SelectValue placeholder="Select cycles" />
                 </SelectTrigger>
-                <SelectContent className="bg-gray-800 border-gray-700">
+                <SelectContent
+                  className={
+                    theme === "light"
+                      ? "bg-white border-gray-300"
+                      : "bg-gray-800 border-gray-700"
+                  }
+                >
                   {[2, 3, 4, 5, 6].map((num) => (
                     <SelectItem key={num} value={num.toString()}>
                       {num} cycles

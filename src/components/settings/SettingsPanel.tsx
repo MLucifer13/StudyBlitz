@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   Settings,
@@ -27,10 +27,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { AppTheme } from "@/components/dashboard/DashboardLayout";
 
 interface SettingsPanelProps {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
+  theme?: AppTheme;
+  onThemeChange?: (theme: AppTheme) => void;
 }
 
 const themeOptions = [
@@ -41,8 +44,13 @@ const themeOptions = [
   { value: "green", label: "Neon Green", color: "#39ff14" },
 ];
 
-const SettingsPanel = ({ open = true, onOpenChange }: SettingsPanelProps) => {
-  const [darkMode, setDarkMode] = useState(true);
+const SettingsPanel = ({
+  open = true,
+  onOpenChange,
+  theme = "dark",
+  onThemeChange = () => {},
+}: SettingsPanelProps) => {
+  const [darkMode, setDarkMode] = useState(theme === "dark");
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [selectedTheme, setSelectedTheme] = useState("purple");
@@ -50,21 +58,54 @@ const SettingsPanel = ({ open = true, onOpenChange }: SettingsPanelProps) => {
   const [shortBreakLength, setShortBreakLength] = useState("5");
   const [longBreakLength, setLongBreakLength] = useState("15");
 
+  // Update darkMode when theme prop changes
+  useEffect(() => {
+    setDarkMode(theme === "dark");
+  }, [theme]);
+
+  // Handle dark mode toggle
+  const handleDarkModeToggle = (checked: boolean) => {
+    setDarkMode(checked);
+    onThemeChange(checked ? "dark" : "light");
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-gray-900 border border-gray-800 text-white max-w-md w-full overflow-hidden">
+      <DialogContent
+        className={cn(
+          "max-w-md w-full overflow-hidden",
+          theme === "dark"
+            ? "bg-gray-900 border border-gray-800 text-white"
+            : "bg-white border border-gray-200 text-gray-900 shadow-lg",
+        )}
+      >
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="absolute inset-0 z-0 bg-gradient-to-br from-gray-900 to-black overflow-hidden"
+          className={cn(
+            "absolute inset-0 z-0 overflow-hidden",
+            theme === "dark"
+              ? "bg-gradient-to-br from-gray-900 to-black"
+              : "bg-gradient-to-br from-gray-50 to-white",
+          )}
         >
-          <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-purple-500 via-transparent to-transparent"></div>
+          <div
+            className={cn(
+              "absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-purple-500 via-transparent to-transparent",
+              theme === "dark" ? "opacity-20" : "opacity-10",
+            )}
+          ></div>
         </motion.div>
 
         <div className="relative z-10">
           <DialogHeader className="mb-4">
             <div className="flex items-center justify-center mb-2">
-              <Settings className="h-8 w-8 text-purple-400 mr-2" />
+              <Settings
+                className={cn(
+                  "h-8 w-8 mr-2",
+                  theme === "dark" ? "text-purple-400" : "text-purple-600",
+                )}
+              />
               <DialogTitle className="text-2xl font-bold text-center bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-500">
                 Settings
               </DialogTitle>
@@ -72,22 +113,41 @@ const SettingsPanel = ({ open = true, onOpenChange }: SettingsPanelProps) => {
           </DialogHeader>
 
           <Tabs defaultValue="appearance" className="w-full">
-            <TabsList className="w-full grid grid-cols-3 bg-gray-800 border border-gray-700">
+            <TabsList
+              className={cn(
+                "w-full grid grid-cols-3",
+                theme === "dark"
+                  ? "bg-gray-800 border border-gray-700"
+                  : "bg-gray-100 border border-gray-200",
+              )}
+            >
               <TabsTrigger
                 value="appearance"
-                className="data-[state=active]:bg-gray-700 data-[state=active]:text-purple-400"
+                className={cn(
+                  theme === "dark"
+                    ? "data-[state=active]:bg-gray-700 data-[state=active]:text-purple-400"
+                    : "data-[state=active]:bg-white data-[state=active]:text-purple-600",
+                )}
               >
                 Appearance
               </TabsTrigger>
               <TabsTrigger
                 value="notifications"
-                className="data-[state=active]:bg-gray-700 data-[state=active]:text-purple-400"
+                className={cn(
+                  theme === "dark"
+                    ? "data-[state=active]:bg-gray-700 data-[state=active]:text-purple-400"
+                    : "data-[state=active]:bg-white data-[state=active]:text-purple-600",
+                )}
               >
                 Notifications
               </TabsTrigger>
               <TabsTrigger
                 value="timer"
-                className="data-[state=active]:bg-gray-700 data-[state=active]:text-purple-400"
+                className={cn(
+                  theme === "dark"
+                    ? "data-[state=active]:bg-gray-700 data-[state=active]:text-purple-400"
+                    : "data-[state=active]:bg-white data-[state=active]:text-purple-600",
+                )}
               >
                 Timer
               </TabsTrigger>
@@ -95,44 +155,75 @@ const SettingsPanel = ({ open = true, onOpenChange }: SettingsPanelProps) => {
 
             <TabsContent value="appearance" className="space-y-4 mt-4">
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-3 rounded-lg bg-gray-800 border border-gray-700">
+                <div
+                  className={cn(
+                    "flex items-center justify-between p-3 rounded-lg",
+                    theme === "dark"
+                      ? "bg-gray-800 border border-gray-700"
+                      : "bg-white border border-gray-200 shadow-sm",
+                  )}
+                >
                   <div className="flex items-center">
                     {darkMode ? (
                       <Moon className="h-5 w-5 text-purple-400 mr-2" />
                     ) : (
-                      <Sun className="h-5 w-5 text-yellow-400 mr-2" />
+                      <Sun className="h-5 w-5 text-yellow-500 mr-2" />
                     )}
-                    <span>Dark Mode</span>
+                    <span>{darkMode ? "Dark Mode" : "Light Mode"}</span>
                   </div>
                   <Switch
                     checked={darkMode}
-                    onCheckedChange={setDarkMode}
+                    onCheckedChange={handleDarkModeToggle}
                     className="data-[state=checked]:bg-purple-500"
                   />
                 </div>
 
-                <div className="p-3 rounded-lg bg-gray-800 border border-gray-700">
+                <div
+                  className={cn(
+                    "p-3 rounded-lg",
+                    theme === "dark"
+                      ? "bg-gray-800 border border-gray-700"
+                      : "bg-white border border-gray-200 shadow-sm",
+                  )}
+                >
                   <label className="block mb-2">Theme Color</label>
                   <Select
                     value={selectedTheme}
                     onValueChange={setSelectedTheme}
                   >
-                    <SelectTrigger className="w-full bg-gray-700 border-gray-600">
+                    <SelectTrigger
+                      className={cn(
+                        "w-full",
+                        theme === "dark"
+                          ? "bg-gray-700 border-gray-600"
+                          : "bg-gray-50 border-gray-200",
+                      )}
+                    >
                       <SelectValue placeholder="Select a theme" />
                     </SelectTrigger>
-                    <SelectContent className="bg-gray-800 border-gray-700">
-                      {themeOptions.map((theme) => (
+                    <SelectContent
+                      className={cn(
+                        theme === "dark"
+                          ? "bg-gray-800 border-gray-700"
+                          : "bg-white border-gray-200",
+                      )}
+                    >
+                      {themeOptions.map((themeOption) => (
                         <SelectItem
-                          key={theme.value}
-                          value={theme.value}
-                          className="focus:bg-gray-700 focus:text-white"
+                          key={themeOption.value}
+                          value={themeOption.value}
+                          className={cn(
+                            theme === "dark"
+                              ? "focus:bg-gray-700 focus:text-white"
+                              : "focus:bg-gray-100 focus:text-gray-900",
+                          )}
                         >
                           <div className="flex items-center">
                             <div
                               className="w-4 h-4 rounded-full mr-2"
-                              style={{ backgroundColor: theme.color }}
+                              style={{ backgroundColor: themeOption.color }}
                             />
-                            {theme.label}
+                            {themeOption.label}
                           </div>
                         </SelectItem>
                       ))}
@@ -140,31 +231,46 @@ const SettingsPanel = ({ open = true, onOpenChange }: SettingsPanelProps) => {
                   </Select>
                 </div>
 
-                <div className="p-3 rounded-lg bg-gray-800 border border-gray-700">
+                <div
+                  className={cn(
+                    "p-3 rounded-lg",
+                    theme === "dark"
+                      ? "bg-gray-800 border border-gray-700"
+                      : "bg-white border border-gray-200 shadow-sm",
+                  )}
+                >
                   <div className="grid grid-cols-3 gap-2">
-                    {themeOptions.map((theme) => (
+                    {themeOptions.map((themeOption) => (
                       <motion.button
-                        key={theme.value}
+                        key={themeOption.value}
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         className={cn(
-                          "p-2 rounded-md border border-gray-700 transition-all",
-                          selectedTheme === theme.value
-                            ? "ring-2 ring-offset-2 ring-offset-gray-900"
+                          "p-2 rounded-md transition-all",
+                          theme === "dark"
+                            ? "border border-gray-700"
+                            : "border border-gray-200",
+                          selectedTheme === themeOption.value
+                            ? theme === "dark"
+                              ? "ring-2 ring-offset-2 ring-offset-gray-900"
+                              : "ring-2 ring-offset-2 ring-offset-white"
                             : "",
                         )}
                         style={{
                           boxShadow:
-                            selectedTheme === theme.value
-                              ? `0 0 10px ${theme.color}`
+                            selectedTheme === themeOption.value
+                              ? `0 0 10px ${themeOption.color}`
                               : "none",
-                          borderColor: theme.color,
+                          borderColor: themeOption.color,
                         }}
-                        onClick={() => setSelectedTheme(theme.value)}
+                        onClick={() => setSelectedTheme(themeOption.value)}
                       >
                         <div
                           className="w-full h-8 rounded-md"
-                          style={{ backgroundColor: theme.color, opacity: 0.8 }}
+                          style={{
+                            backgroundColor: themeOption.color,
+                            opacity: 0.8,
+                          }}
                         />
                       </motion.button>
                     ))}
@@ -175,12 +281,31 @@ const SettingsPanel = ({ open = true, onOpenChange }: SettingsPanelProps) => {
 
             <TabsContent value="notifications" className="space-y-4 mt-4">
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-3 rounded-lg bg-gray-800 border border-gray-700">
+                <div
+                  className={cn(
+                    "flex items-center justify-between p-3 rounded-lg",
+                    theme === "dark"
+                      ? "bg-gray-800 border border-gray-700"
+                      : "bg-white border border-gray-200 shadow-sm",
+                  )}
+                >
                   <div className="flex items-center">
                     {soundEnabled ? (
-                      <Volume2 className="h-5 w-5 text-purple-400 mr-2" />
+                      <Volume2
+                        className={cn(
+                          "h-5 w-5 mr-2",
+                          theme === "dark"
+                            ? "text-purple-400"
+                            : "text-purple-600",
+                        )}
+                      />
                     ) : (
-                      <VolumeX className="h-5 w-5 text-gray-400 mr-2" />
+                      <VolumeX
+                        className={cn(
+                          "h-5 w-5 mr-2",
+                          theme === "dark" ? "text-gray-400" : "text-gray-500",
+                        )}
+                      />
                     )}
                     <span>Sound Effects</span>
                   </div>
@@ -191,12 +316,31 @@ const SettingsPanel = ({ open = true, onOpenChange }: SettingsPanelProps) => {
                   />
                 </div>
 
-                <div className="flex items-center justify-between p-3 rounded-lg bg-gray-800 border border-gray-700">
+                <div
+                  className={cn(
+                    "flex items-center justify-between p-3 rounded-lg",
+                    theme === "dark"
+                      ? "bg-gray-800 border border-gray-700"
+                      : "bg-white border border-gray-200 shadow-sm",
+                  )}
+                >
                   <div className="flex items-center">
                     {notificationsEnabled ? (
-                      <Bell className="h-5 w-5 text-purple-400 mr-2" />
+                      <Bell
+                        className={cn(
+                          "h-5 w-5 mr-2",
+                          theme === "dark"
+                            ? "text-purple-400"
+                            : "text-purple-600",
+                        )}
+                      />
                     ) : (
-                      <BellOff className="h-5 w-5 text-gray-400 mr-2" />
+                      <BellOff
+                        className={cn(
+                          "h-5 w-5 mr-2",
+                          theme === "dark" ? "text-gray-400" : "text-gray-500",
+                        )}
+                      />
                     )}
                     <span>Notifications</span>
                   </div>
@@ -211,7 +355,14 @@ const SettingsPanel = ({ open = true, onOpenChange }: SettingsPanelProps) => {
 
             <TabsContent value="timer" className="space-y-4 mt-4">
               <div className="space-y-4">
-                <div className="p-3 rounded-lg bg-gray-800 border border-gray-700">
+                <div
+                  className={cn(
+                    "p-3 rounded-lg",
+                    theme === "dark"
+                      ? "bg-gray-800 border border-gray-700"
+                      : "bg-white border border-gray-200 shadow-sm",
+                  )}
+                >
                   <label className="block mb-2">
                     Pomodoro Length (minutes)
                   </label>
@@ -219,10 +370,23 @@ const SettingsPanel = ({ open = true, onOpenChange }: SettingsPanelProps) => {
                     value={pomodoroLength}
                     onValueChange={setPomodoroLength}
                   >
-                    <SelectTrigger className="w-full bg-gray-700 border-gray-600">
+                    <SelectTrigger
+                      className={cn(
+                        "w-full",
+                        theme === "dark"
+                          ? "bg-gray-700 border-gray-600"
+                          : "bg-gray-50 border-gray-200",
+                      )}
+                    >
                       <SelectValue placeholder="Select duration" />
                     </SelectTrigger>
-                    <SelectContent className="bg-gray-800 border-gray-700">
+                    <SelectContent
+                      className={cn(
+                        theme === "dark"
+                          ? "bg-gray-800 border-gray-700"
+                          : "bg-white border-gray-200",
+                      )}
+                    >
                       {[
                         "15",
                         "20",
@@ -238,7 +402,11 @@ const SettingsPanel = ({ open = true, onOpenChange }: SettingsPanelProps) => {
                         <SelectItem
                           key={value}
                           value={value}
-                          className="focus:bg-gray-700 focus:text-white"
+                          className={cn(
+                            theme === "dark"
+                              ? "focus:bg-gray-700 focus:text-white"
+                              : "focus:bg-gray-100 focus:text-gray-900",
+                          )}
                         >
                           {value} minutes
                         </SelectItem>
@@ -247,7 +415,14 @@ const SettingsPanel = ({ open = true, onOpenChange }: SettingsPanelProps) => {
                   </Select>
                 </div>
 
-                <div className="p-3 rounded-lg bg-gray-800 border border-gray-700">
+                <div
+                  className={cn(
+                    "p-3 rounded-lg",
+                    theme === "dark"
+                      ? "bg-gray-800 border border-gray-700"
+                      : "bg-white border border-gray-200 shadow-sm",
+                  )}
+                >
                   <label className="block mb-2">
                     Short Break Length (minutes)
                   </label>
@@ -255,16 +430,33 @@ const SettingsPanel = ({ open = true, onOpenChange }: SettingsPanelProps) => {
                     value={shortBreakLength}
                     onValueChange={setShortBreakLength}
                   >
-                    <SelectTrigger className="w-full bg-gray-700 border-gray-600">
+                    <SelectTrigger
+                      className={cn(
+                        "w-full",
+                        theme === "dark"
+                          ? "bg-gray-700 border-gray-600"
+                          : "bg-gray-50 border-gray-200",
+                      )}
+                    >
                       <SelectValue placeholder="Select duration" />
                     </SelectTrigger>
-                    <SelectContent className="bg-gray-800 border-gray-700">
+                    <SelectContent
+                      className={cn(
+                        theme === "dark"
+                          ? "bg-gray-800 border-gray-700"
+                          : "bg-white border-gray-200",
+                      )}
+                    >
                       {["3", "4", "5", "6", "7", "8", "9", "10"].map(
                         (value) => (
                           <SelectItem
                             key={value}
                             value={value}
-                            className="focus:bg-gray-700 focus:text-white"
+                            className={cn(
+                              theme === "dark"
+                                ? "focus:bg-gray-700 focus:text-white"
+                                : "focus:bg-gray-100 focus:text-gray-900",
+                            )}
                           >
                             {value} minutes
                           </SelectItem>
@@ -274,7 +466,14 @@ const SettingsPanel = ({ open = true, onOpenChange }: SettingsPanelProps) => {
                   </Select>
                 </div>
 
-                <div className="p-3 rounded-lg bg-gray-800 border border-gray-700">
+                <div
+                  className={cn(
+                    "p-3 rounded-lg",
+                    theme === "dark"
+                      ? "bg-gray-800 border border-gray-700"
+                      : "bg-white border border-gray-200 shadow-sm",
+                  )}
+                >
                   <label className="block mb-2">
                     Long Break Length (minutes)
                   </label>
@@ -282,15 +481,32 @@ const SettingsPanel = ({ open = true, onOpenChange }: SettingsPanelProps) => {
                     value={longBreakLength}
                     onValueChange={setLongBreakLength}
                   >
-                    <SelectTrigger className="w-full bg-gray-700 border-gray-600">
+                    <SelectTrigger
+                      className={cn(
+                        "w-full",
+                        theme === "dark"
+                          ? "bg-gray-700 border-gray-600"
+                          : "bg-gray-50 border-gray-200",
+                      )}
+                    >
                       <SelectValue placeholder="Select duration" />
                     </SelectTrigger>
-                    <SelectContent className="bg-gray-800 border-gray-700">
+                    <SelectContent
+                      className={cn(
+                        theme === "dark"
+                          ? "bg-gray-800 border-gray-700"
+                          : "bg-white border-gray-200",
+                      )}
+                    >
                       {["10", "15", "20", "25", "30"].map((value) => (
                         <SelectItem
                           key={value}
                           value={value}
-                          className="focus:bg-gray-700 focus:text-white"
+                          className={cn(
+                            theme === "dark"
+                              ? "focus:bg-gray-700 focus:text-white"
+                              : "focus:bg-gray-100 focus:text-gray-900",
+                          )}
                         >
                           {value} minutes
                         </SelectItem>
@@ -306,7 +522,11 @@ const SettingsPanel = ({ open = true, onOpenChange }: SettingsPanelProps) => {
             <Button
               variant="outline"
               onClick={() => onOpenChange?.(false)}
-              className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white"
+              className={cn(
+                theme === "dark"
+                  ? "border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white"
+                  : "border-gray-300 text-gray-600 hover:bg-gray-100 hover:text-gray-900",
+              )}
             >
               Cancel
             </Button>

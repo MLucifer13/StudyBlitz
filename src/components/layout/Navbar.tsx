@@ -10,6 +10,9 @@ import {
   Clock,
   Moon,
   Sun,
+  LogIn,
+  LogOut,
+  User,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,6 +20,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
@@ -32,6 +36,7 @@ const Navbar = ({
   activeItem = "dashboard",
 }: NavbarProps) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const navItems = [
     {
@@ -56,6 +61,12 @@ const Navbar = ({
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  // This is a placeholder function that will be replaced with actual backend integration
+  const handleLogin = () => {
+    // In a real implementation, this would make an API call to the backend
+    setIsLoggedIn(!isLoggedIn);
   };
 
   return (
@@ -140,10 +151,80 @@ const Navbar = ({
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+
+        {/* Login/User Profile Button */}
+        {isLoggedIn ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                className="relative group ml-2 px-3 py-2 rounded-md transition-all duration-300 text-gray-300 hover:text-white hover:bg-purple-900/10"
+              >
+                <div className="flex items-center space-x-2">
+                  <User className="h-5 w-5" />
+                  <span>My Profile</span>
+                </div>
+                <div className="absolute -inset-0.5 rounded-lg opacity-0 group-hover:opacity-100 bg-gradient-to-r from-purple-500 via-blue-500 to-pink-500 blur-sm group-hover:blur transition duration-500" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="end"
+              className="bg-black/90 border border-purple-900/50 backdrop-blur-md"
+            >
+              <DropdownMenuItem className="text-gray-300 hover:text-white hover:bg-purple-900/20 cursor-pointer">
+                <User className="h-4 w-4 mr-2" />
+                <span>Profile</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem className="text-gray-300 hover:text-white hover:bg-purple-900/20 cursor-pointer">
+                <Settings className="h-4 w-4 mr-2" />
+                <span>Settings</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator className="bg-gray-700" />
+              <DropdownMenuItem
+                onClick={handleLogin}
+                className="text-red-400 hover:text-red-300 hover:bg-red-900/20 cursor-pointer"
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                <span>Logout</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : (
+          <Button
+            onClick={handleLogin}
+            className="relative group ml-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 rounded-md transition-all duration-300 text-white shadow-[0_0_15px_rgba(139,92,246,0.3)]"
+          >
+            <div className="flex items-center space-x-2">
+              <LogIn className="h-5 w-5" />
+              <span>Login</span>
+            </div>
+          </Button>
+        )}
       </div>
 
       {/* Mobile Menu Button */}
-      <div className="md:hidden">
+      <div className="md:hidden flex items-center">
+        {/* Mobile Login Button */}
+        {!isLoggedIn ? (
+          <Button
+            onClick={handleLogin}
+            variant="ghost"
+            className="relative group p-2 mr-2 rounded-full transition-all duration-300 text-purple-400 hover:text-white hover:bg-purple-900/10"
+          >
+            <LogIn className="h-5 w-5" />
+            <div className="absolute -inset-0.5 rounded-full opacity-0 group-hover:opacity-100 bg-gradient-to-r from-purple-500 via-blue-500 to-pink-500 blur-sm group-hover:blur transition duration-500" />
+          </Button>
+        ) : (
+          <Button
+            onClick={handleLogin}
+            variant="ghost"
+            className="relative group p-2 mr-2 rounded-full transition-all duration-300 text-purple-400 hover:text-white hover:bg-purple-900/10"
+          >
+            <User className="h-5 w-5" />
+            <div className="absolute -inset-0.5 rounded-full opacity-0 group-hover:opacity-100 bg-gradient-to-r from-purple-500 via-blue-500 to-pink-500 blur-sm group-hover:blur transition duration-500" />
+          </Button>
+        )}
+
         <Button
           variant="ghost"
           className="relative group p-2 rounded-full transition-all duration-300 text-gray-400 hover:text-white hover:bg-purple-900/10"
@@ -212,6 +293,21 @@ const Navbar = ({
                 <span>{isDarkMode ? "Light Mode" : "Dark Mode"}</span>
               </div>
             </Button>
+            {isLoggedIn && (
+              <Button
+                variant="ghost"
+                className="w-full justify-start text-red-400 hover:text-red-300 hover:bg-red-900/10 px-3 py-2"
+                onClick={() => {
+                  handleLogin();
+                  toggleMobileMenu();
+                }}
+              >
+                <div className="flex items-center space-x-2">
+                  <LogOut className="h-5 w-5" />
+                  <span>Logout</span>
+                </div>
+              </Button>
+            )}
           </div>
         </motion.div>
       )}

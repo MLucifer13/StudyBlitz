@@ -2,10 +2,10 @@
 module.exports = {
   darkMode: ["class"],
   content: [
-    './pages/**/*.{ts,tsx}',
-    './components/**/*.{ts,tsx}',
-    './app/**/*.{ts,tsx}',
-    './src/**/*.{ts,tsx}',
+    "./pages/**/*.{ts,tsx}",
+    "./components/**/*.{ts,tsx}",
+    "./app/**/*.{ts,tsx}",
+    "./src/**/*.{ts,tsx}",
   ],
   prefix: "",
   theme: {
@@ -51,6 +51,37 @@ module.exports = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // Color blind friendly palettes
+        colorblind: {
+          // Deuteranopia (red-green color blindness)
+          deuteranopia: {
+            purple: "#9F7AEA", // More blue-tinted purple
+            blue: "#4299E1", // Standard blue
+            orange: "#ED8936", // Orange instead of pink
+            teal: "#38B2AC", // Teal instead of green
+          },
+          // Protanopia (red-green color blindness, different from deuteranopia)
+          protanopia: {
+            blue: "#3182CE", // Darker blue
+            yellow: "#ECC94B", // Yellow instead of red/pink
+            cyan: "#0BC5EA", // Cyan instead of green
+            purple: "#805AD5", // Purple is still distinguishable
+          },
+          // Tritanopia (blue-yellow color blindness)
+          tritanopia: {
+            pink: "#ED64A6", // Pink is visible
+            red: "#E53E3E", // Red is visible
+            green: "#48BB78", // Green is visible but different
+            gray: "#718096", // Gray instead of blue
+          },
+          // Monochromacy (total color blindness)
+          monochromacy: {
+            dark: "#1A202C", // Very dark gray
+            medium: "#4A5568", // Medium gray
+            light: "#A0AEC0", // Light gray
+            lighter: "#E2E8F0", // Very light gray
+          },
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -74,4 +105,4 @@ module.exports = {
     },
   },
   plugins: [require("tailwindcss-animate")],
-}
+};
