@@ -37,6 +37,13 @@ interface WeeklyPlannerProps {
   onAddEvent?: (event: Omit<Event, "id">) => void;
   onEditEvent?: (event: Event) => void;
   onDeleteEvent?: (id: string) => void;
+  theme?: "light" | "dark";
+  colorBlindMode?:
+    | "default"
+    | "deuteranopia"
+    | "protanopia"
+    | "tritanopia"
+    | "monochromacy";
 }
 
 const DAYS_OF_WEEK = [
@@ -101,6 +108,8 @@ const WeeklyPlanner: React.FC<WeeklyPlannerProps> = ({
   onAddEvent = () => {},
   onEditEvent = () => {},
   onDeleteEvent = () => {},
+  theme = "dark",
+  colorBlindMode = "default",
 }) => {
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [isAddEventOpen, setIsAddEventOpen] = useState(false);
@@ -144,23 +153,149 @@ const WeeklyPlanner: React.FC<WeeklyPlannerProps> = ({
   };
 
   const getColorClass = (color: string) => {
-    switch (color) {
-      case "purple":
-        return "bg-purple-950 border-purple-500 text-purple-300 shadow-[0_0_10px_rgba(168,85,247,0.5)]";
-      case "blue":
-        return "bg-blue-950 border-blue-500 text-blue-300 shadow-[0_0_10px_rgba(59,130,246,0.5)]";
-      case "pink":
-        return "bg-pink-950 border-pink-500 text-pink-300 shadow-[0_0_10px_rgba(236,72,153,0.5)]";
-      case "green":
-        return "bg-green-950 border-green-500 text-green-300 shadow-[0_0_10px_rgba(34,197,94,0.5)]";
+    // Color blind mode handling
+    if (colorBlindMode !== "default") {
+      return getColorBlindClass(color, colorBlindMode);
+    }
+
+    // Regular theme-based colors
+    if (theme === "light") {
+      switch (color) {
+        case "purple":
+          return "bg-purple-100 border-purple-500 text-purple-800 shadow-[0_0_10px_rgba(168,85,247,0.3)]";
+        case "blue":
+          return "bg-blue-100 border-blue-500 text-blue-800 shadow-[0_0_10px_rgba(59,130,246,0.3)]";
+        case "pink":
+          return "bg-pink-100 border-pink-500 text-pink-800 shadow-[0_0_10px_rgba(236,72,153,0.3)]";
+        case "green":
+          return "bg-green-100 border-green-500 text-green-800 shadow-[0_0_10px_rgba(34,197,94,0.3)]";
+        default:
+          return "bg-purple-100 border-purple-500 text-purple-800 shadow-[0_0_10px_rgba(168,85,247,0.3)]";
+      }
+    } else {
+      switch (color) {
+        case "purple":
+          return "bg-purple-950 border-purple-500 text-purple-300 shadow-[0_0_10px_rgba(168,85,247,0.5)]";
+        case "blue":
+          return "bg-blue-950 border-blue-500 text-blue-300 shadow-[0_0_10px_rgba(59,130,246,0.5)]";
+        case "pink":
+          return "bg-pink-950 border-pink-500 text-pink-300 shadow-[0_0_10px_rgba(236,72,153,0.5)]";
+        case "green":
+          return "bg-green-950 border-green-500 text-green-300 shadow-[0_0_10px_rgba(34,197,94,0.5)]";
+        default:
+          return "bg-purple-950 border-purple-500 text-purple-300 shadow-[0_0_10px_rgba(168,85,247,0.5)]";
+      }
+    }
+  };
+
+  const getColorBlindClass = (color: string, mode: string) => {
+    switch (mode) {
+      case "deuteranopia":
+        switch (color) {
+          case "purple":
+            return theme === "light"
+              ? "bg-blue-100 border-blue-400 text-blue-800 shadow-[0_0_10px_rgba(66,153,225,0.3)]"
+              : "bg-blue-900 border-blue-400 text-blue-200 shadow-[0_0_10px_rgba(66,153,225,0.5)]";
+          case "blue":
+            return theme === "light"
+              ? "bg-blue-100 border-blue-500 text-blue-800 shadow-[0_0_10px_rgba(59,130,246,0.3)]"
+              : "bg-blue-900 border-blue-500 text-blue-200 shadow-[0_0_10px_rgba(59,130,246,0.5)]";
+          case "pink":
+            return theme === "light"
+              ? "bg-orange-100 border-orange-500 text-orange-800 shadow-[0_0_10px_rgba(237,137,54,0.3)]"
+              : "bg-orange-900 border-orange-500 text-orange-200 shadow-[0_0_10px_rgba(237,137,54,0.5)]";
+          case "green":
+            return theme === "light"
+              ? "bg-teal-100 border-teal-500 text-teal-800 shadow-[0_0_10px_rgba(56,178,172,0.3)]"
+              : "bg-teal-900 border-teal-500 text-teal-200 shadow-[0_0_10px_rgba(56,178,172,0.5)]";
+          default:
+            return theme === "light"
+              ? "bg-blue-100 border-blue-400 text-blue-800 shadow-[0_0_10px_rgba(66,153,225,0.3)]"
+              : "bg-blue-900 border-blue-400 text-blue-200 shadow-[0_0_10px_rgba(66,153,225,0.5)]";
+        }
+      case "protanopia":
+        switch (color) {
+          case "purple":
+            return theme === "light"
+              ? "bg-purple-100 border-purple-500 text-purple-800 shadow-[0_0_10px_rgba(128,90,213,0.3)]"
+              : "bg-purple-900 border-purple-500 text-purple-200 shadow-[0_0_10px_rgba(128,90,213,0.5)]";
+          case "blue":
+            return theme === "light"
+              ? "bg-blue-100 border-blue-600 text-blue-800 shadow-[0_0_10px_rgba(49,130,206,0.3)]"
+              : "bg-blue-900 border-blue-600 text-blue-200 shadow-[0_0_10px_rgba(49,130,206,0.5)]";
+          case "pink":
+            return theme === "light"
+              ? "bg-yellow-100 border-yellow-500 text-yellow-800 shadow-[0_0_10px_rgba(236,201,75,0.3)]"
+              : "bg-yellow-900 border-yellow-500 text-yellow-200 shadow-[0_0_10px_rgba(236,201,75,0.5)]";
+          case "green":
+            return theme === "light"
+              ? "bg-cyan-100 border-cyan-500 text-cyan-800 shadow-[0_0_10px_rgba(11,197,234,0.3)]"
+              : "bg-cyan-900 border-cyan-500 text-cyan-200 shadow-[0_0_10px_rgba(11,197,234,0.5)]";
+          default:
+            return theme === "light"
+              ? "bg-purple-100 border-purple-500 text-purple-800 shadow-[0_0_10px_rgba(128,90,213,0.3)]"
+              : "bg-purple-900 border-purple-500 text-purple-200 shadow-[0_0_10px_rgba(128,90,213,0.5)]";
+        }
+      case "tritanopia":
+        switch (color) {
+          case "purple":
+            return theme === "light"
+              ? "bg-pink-100 border-pink-500 text-pink-800 shadow-[0_0_10px_rgba(237,100,166,0.3)]"
+              : "bg-pink-900 border-pink-500 text-pink-200 shadow-[0_0_10px_rgba(237,100,166,0.5)]";
+          case "blue":
+            return theme === "light"
+              ? "bg-red-100 border-red-500 text-red-800 shadow-[0_0_10px_rgba(229,62,62,0.3)]"
+              : "bg-red-900 border-red-500 text-red-200 shadow-[0_0_10px_rgba(229,62,62,0.5)]";
+          case "pink":
+            return theme === "light"
+              ? "bg-green-100 border-green-500 text-green-800 shadow-[0_0_10px_rgba(72,187,120,0.3)]"
+              : "bg-green-900 border-green-500 text-green-200 shadow-[0_0_10px_rgba(72,187,120,0.5)]";
+          case "green":
+            return theme === "light"
+              ? "bg-gray-100 border-gray-500 text-gray-800 shadow-[0_0_10px_rgba(113,128,150,0.3)]"
+              : "bg-gray-800 border-gray-500 text-gray-200 shadow-[0_0_10px_rgba(113,128,150,0.5)]";
+          default:
+            return theme === "light"
+              ? "bg-pink-100 border-pink-500 text-pink-800 shadow-[0_0_10px_rgba(237,100,166,0.3)]"
+              : "bg-pink-900 border-pink-500 text-pink-200 shadow-[0_0_10px_rgba(237,100,166,0.5)]";
+        }
+      case "monochromacy":
+        switch (color) {
+          case "purple":
+            return theme === "light"
+              ? "bg-gray-100 border-gray-500 text-gray-800 shadow-[0_0_10px_rgba(160,174,192,0.3)]"
+              : "bg-gray-800 border-gray-500 text-gray-200 shadow-[0_0_10px_rgba(160,174,192,0.5)]";
+          case "blue":
+            return theme === "light"
+              ? "bg-gray-200 border-gray-600 text-gray-800 shadow-[0_0_10px_rgba(74,85,104,0.3)]"
+              : "bg-gray-700 border-gray-600 text-gray-200 shadow-[0_0_10px_rgba(74,85,104,0.5)]";
+          case "pink":
+            return theme === "light"
+              ? "bg-gray-50 border-gray-400 text-gray-800 shadow-[0_0_10px_rgba(226,232,240,0.3)]"
+              : "bg-gray-900 border-gray-400 text-gray-200 shadow-[0_0_10px_rgba(226,232,240,0.5)]";
+          case "green":
+            return theme === "light"
+              ? "bg-gray-300 border-gray-700 text-gray-800 shadow-[0_0_10px_rgba(26,32,44,0.3)]"
+              : "bg-gray-600 border-gray-700 text-gray-200 shadow-[0_0_10px_rgba(26,32,44,0.5)]";
+          default:
+            return theme === "light"
+              ? "bg-gray-100 border-gray-500 text-gray-800 shadow-[0_0_10px_rgba(160,174,192,0.3)]"
+              : "bg-gray-800 border-gray-500 text-gray-200 shadow-[0_0_10px_rgba(160,174,192,0.5)]";
+        }
       default:
-        return "bg-purple-950 border-purple-500 text-purple-300 shadow-[0_0_10px_rgba(168,85,247,0.5)]";
+        return theme === "light"
+          ? "bg-purple-100 border-purple-500 text-purple-800 shadow-[0_0_10px_rgba(168,85,247,0.3)]"
+          : "bg-purple-950 border-purple-500 text-purple-300 shadow-[0_0_10px_rgba(168,85,247,0.5)]";
     }
   };
 
   return (
-    <Card className="w-full h-full bg-gray-950 border-gray-800 text-white overflow-hidden">
-      <CardHeader className="bg-gray-900 border-b border-gray-800 flex flex-row justify-between items-center">
+    <Card
+      className={`w-full h-full overflow-hidden ${theme === "light" ? "bg-white border-gray-200 text-gray-900" : "bg-gray-950 border-gray-800 text-white"}`}
+    >
+      <CardHeader
+        className={`flex flex-row justify-between items-center border-b ${theme === "light" ? "bg-gray-50 border-gray-200" : "bg-gray-900 border-gray-800"}`}
+      >
         <CardTitle className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-blue-400 to-pink-400">
           Weekly Planner
         </CardTitle>
@@ -168,21 +303,28 @@ const WeeklyPlanner: React.FC<WeeklyPlannerProps> = ({
           <DialogTrigger asChild>
             <Button
               variant="outline"
-              className="border-purple-500 text-purple-400 hover:bg-purple-950 hover:text-purple-300"
+              className={`border-purple-500 ${theme === "light" ? "text-purple-600 hover:bg-purple-50 hover:text-purple-700" : "text-purple-400 hover:bg-purple-950 hover:text-purple-300"}`}
             >
               <Plus className="mr-2 h-4 w-4" />
               Add Event
             </Button>
           </DialogTrigger>
-          <DialogContent className="bg-gray-900 border-gray-800 text-white">
+          <DialogContent
+            className={`${theme === "light" ? "bg-white border-gray-200 text-gray-900" : "bg-gray-900 border-gray-800 text-white"}`}
+          >
             <DialogHeader>
-              <DialogTitle className="text-xl text-purple-400">
+              <DialogTitle
+                className={`text-xl ${theme === "light" ? "text-purple-600" : "text-purple-400"}`}
+              >
                 Add New Event
               </DialogTitle>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid gap-2">
-                <Label htmlFor="title" className="text-white">
+                <Label
+                  htmlFor="title"
+                  className={theme === "light" ? "text-gray-700" : "text-white"}
+                >
                   Title
                 </Label>
                 <Input
@@ -191,11 +333,18 @@ const WeeklyPlanner: React.FC<WeeklyPlannerProps> = ({
                   onChange={(e) =>
                     setNewEvent({ ...newEvent, title: e.target.value })
                   }
-                  className="bg-gray-800 border-gray-700 text-white"
+                  className={
+                    theme === "light"
+                      ? "bg-gray-50 border-gray-300 text-gray-900"
+                      : "bg-gray-800 border-gray-700 text-white"
+                  }
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="description" className="text-white">
+                <Label
+                  htmlFor="description"
+                  className={theme === "light" ? "text-gray-700" : "text-white"}
+                >
                   Description
                 </Label>
                 <Textarea
@@ -204,12 +353,21 @@ const WeeklyPlanner: React.FC<WeeklyPlannerProps> = ({
                   onChange={(e) =>
                     setNewEvent({ ...newEvent, description: e.target.value })
                   }
-                  className="bg-gray-800 border-gray-700 text-white"
+                  className={
+                    theme === "light"
+                      ? "bg-gray-50 border-gray-300 text-gray-900"
+                      : "bg-gray-800 border-gray-700 text-white"
+                  }
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="day" className="text-white">
+                  <Label
+                    htmlFor="day"
+                    className={
+                      theme === "light" ? "text-gray-700" : "text-white"
+                    }
+                  >
                     Day
                   </Label>
                   <Select
@@ -218,10 +376,22 @@ const WeeklyPlanner: React.FC<WeeklyPlannerProps> = ({
                       setNewEvent({ ...newEvent, day: value })
                     }
                   >
-                    <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
+                    <SelectTrigger
+                      className={
+                        theme === "light"
+                          ? "bg-gray-50 border-gray-300 text-gray-900"
+                          : "bg-gray-800 border-gray-700 text-white"
+                      }
+                    >
                       <SelectValue placeholder="Select day" />
                     </SelectTrigger>
-                    <SelectContent className="bg-gray-800 border-gray-700 text-white">
+                    <SelectContent
+                      className={
+                        theme === "light"
+                          ? "bg-white border-gray-300 text-gray-900"
+                          : "bg-gray-800 border-gray-700 text-white"
+                      }
+                    >
                       {DAYS_OF_WEEK.map((day) => (
                         <SelectItem key={day} value={day}>
                           {day}
@@ -231,7 +401,12 @@ const WeeklyPlanner: React.FC<WeeklyPlannerProps> = ({
                   </Select>
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="time" className="text-white">
+                  <Label
+                    htmlFor="time"
+                    className={
+                      theme === "light" ? "text-gray-700" : "text-white"
+                    }
+                  >
                     Time
                   </Label>
                   <Select
@@ -240,10 +415,22 @@ const WeeklyPlanner: React.FC<WeeklyPlannerProps> = ({
                       setNewEvent({ ...newEvent, time: value })
                     }
                   >
-                    <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
+                    <SelectTrigger
+                      className={
+                        theme === "light"
+                          ? "bg-gray-50 border-gray-300 text-gray-900"
+                          : "bg-gray-800 border-gray-700 text-white"
+                      }
+                    >
                       <SelectValue placeholder="Select time" />
                     </SelectTrigger>
-                    <SelectContent className="bg-gray-800 border-gray-700 text-white">
+                    <SelectContent
+                      className={
+                        theme === "light"
+                          ? "bg-white border-gray-300 text-gray-900"
+                          : "bg-gray-800 border-gray-700 text-white"
+                      }
+                    >
                       {TIME_SLOTS.map((time) => (
                         <SelectItem key={time} value={time}>
                           {time}
@@ -254,7 +441,10 @@ const WeeklyPlanner: React.FC<WeeklyPlannerProps> = ({
                 </div>
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="color" className="text-white">
+                <Label
+                  htmlFor="color"
+                  className={theme === "light" ? "text-gray-700" : "text-white"}
+                >
                   Color
                 </Label>
                 <Select
@@ -263,10 +453,22 @@ const WeeklyPlanner: React.FC<WeeklyPlannerProps> = ({
                     setNewEvent({ ...newEvent, color: value })
                   }
                 >
-                  <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
+                  <SelectTrigger
+                    className={
+                      theme === "light"
+                        ? "bg-gray-50 border-gray-300 text-gray-900"
+                        : "bg-gray-800 border-gray-700 text-white"
+                    }
+                  >
                     <SelectValue placeholder="Select color" />
                   </SelectTrigger>
-                  <SelectContent className="bg-gray-800 border-gray-700 text-white">
+                  <SelectContent
+                    className={
+                      theme === "light"
+                        ? "bg-white border-gray-300 text-gray-900"
+                        : "bg-gray-800 border-gray-700 text-white"
+                    }
+                  >
                     {COLOR_OPTIONS.map((color) => (
                       <SelectItem key={color.value} value={color.value}>
                         {color.label}
@@ -280,7 +482,11 @@ const WeeklyPlanner: React.FC<WeeklyPlannerProps> = ({
               <DialogClose asChild>
                 <Button
                   variant="outline"
-                  className="border-gray-700 text-gray-400 hover:bg-gray-800 hover:text-white"
+                  className={
+                    theme === "light"
+                      ? "border-gray-300 text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                      : "border-gray-700 text-gray-400 hover:bg-gray-800 hover:text-white"
+                  }
                 >
                   Cancel
                 </Button>
@@ -296,21 +502,25 @@ const WeeklyPlanner: React.FC<WeeklyPlannerProps> = ({
         </Dialog>
       </CardHeader>
       <CardContent className="p-0 overflow-auto max-h-[calc(100%-80px)]">
-        <div className="grid grid-cols-7 bg-gray-900 border-b border-gray-800 sticky top-0 z-10">
+        <div
+          className={`grid grid-cols-7 sticky top-0 z-10 border-b ${theme === "light" ? "bg-gray-50 border-gray-200" : "bg-gray-900 border-gray-800"}`}
+        >
           {DAYS_OF_WEEK.map((day) => (
             <div
               key={day}
-              className="p-3 text-center font-medium text-gray-300"
+              className={`p-3 text-center font-medium ${theme === "light" ? "text-gray-700" : "text-gray-300"}`}
             >
               {day}
             </div>
           ))}
         </div>
-        <div className="grid grid-cols-7 gap-1 p-2 bg-gray-950">
+        <div
+          className={`grid grid-cols-7 gap-1 p-2 ${theme === "light" ? "bg-gray-50" : "bg-gray-950"}`}
+        >
           {DAYS_OF_WEEK.map((day) => (
             <div
               key={day}
-              className="min-h-[400px] border border-gray-800 rounded-md p-2"
+              className={`min-h-[400px] border rounded-md p-2 ${theme === "light" ? "border-gray-200" : "border-gray-800"}`}
             >
               {getEventsByDay(day).map((event) => (
                 <div
@@ -341,16 +551,23 @@ const WeeklyPlanner: React.FC<WeeklyPlannerProps> = ({
         open={isEditEventOpen && selectedEvent !== null}
         onOpenChange={setIsEditEventOpen}
       >
-        <DialogContent className="bg-gray-900 border-gray-800 text-white">
+        <DialogContent
+          className={`${theme === "light" ? "bg-white border-gray-200 text-gray-900" : "bg-gray-900 border-gray-800 text-white"}`}
+        >
           <DialogHeader>
-            <DialogTitle className="text-xl text-blue-400">
+            <DialogTitle
+              className={`text-xl ${theme === "light" ? "text-blue-600" : "text-blue-400"}`}
+            >
               Edit Event
             </DialogTitle>
           </DialogHeader>
           {selectedEvent && (
             <div className="grid gap-4 py-4">
               <div className="grid gap-2">
-                <Label htmlFor="edit-title" className="text-white">
+                <Label
+                  htmlFor="edit-title"
+                  className={theme === "light" ? "text-gray-700" : "text-white"}
+                >
                   Title
                 </Label>
                 <Input
@@ -362,11 +579,18 @@ const WeeklyPlanner: React.FC<WeeklyPlannerProps> = ({
                       title: e.target.value,
                     })
                   }
-                  className="bg-gray-800 border-gray-700 text-white"
+                  className={
+                    theme === "light"
+                      ? "bg-gray-50 border-gray-300 text-gray-900"
+                      : "bg-gray-800 border-gray-700 text-white"
+                  }
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="edit-description" className="text-white">
+                <Label
+                  htmlFor="edit-description"
+                  className={theme === "light" ? "text-gray-700" : "text-white"}
+                >
                   Description
                 </Label>
                 <Textarea
@@ -378,12 +602,21 @@ const WeeklyPlanner: React.FC<WeeklyPlannerProps> = ({
                       description: e.target.value,
                     })
                   }
-                  className="bg-gray-800 border-gray-700 text-white"
+                  className={
+                    theme === "light"
+                      ? "bg-gray-50 border-gray-300 text-gray-900"
+                      : "bg-gray-800 border-gray-700 text-white"
+                  }
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="edit-day" className="text-white">
+                  <Label
+                    htmlFor="edit-day"
+                    className={
+                      theme === "light" ? "text-gray-700" : "text-white"
+                    }
+                  >
                     Day
                   </Label>
                   <Select
@@ -392,10 +625,22 @@ const WeeklyPlanner: React.FC<WeeklyPlannerProps> = ({
                       setSelectedEvent({ ...selectedEvent, day: value })
                     }
                   >
-                    <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
+                    <SelectTrigger
+                      className={
+                        theme === "light"
+                          ? "bg-gray-50 border-gray-300 text-gray-900"
+                          : "bg-gray-800 border-gray-700 text-white"
+                      }
+                    >
                       <SelectValue placeholder="Select day" />
                     </SelectTrigger>
-                    <SelectContent className="bg-gray-800 border-gray-700 text-white">
+                    <SelectContent
+                      className={
+                        theme === "light"
+                          ? "bg-white border-gray-300 text-gray-900"
+                          : "bg-gray-800 border-gray-700 text-white"
+                      }
+                    >
                       {DAYS_OF_WEEK.map((day) => (
                         <SelectItem key={`edit-${day}`} value={day}>
                           {day}
@@ -405,7 +650,12 @@ const WeeklyPlanner: React.FC<WeeklyPlannerProps> = ({
                   </Select>
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="edit-time" className="text-white">
+                  <Label
+                    htmlFor="edit-time"
+                    className={
+                      theme === "light" ? "text-gray-700" : "text-white"
+                    }
+                  >
                     Time
                   </Label>
                   <Select
@@ -414,10 +664,22 @@ const WeeklyPlanner: React.FC<WeeklyPlannerProps> = ({
                       setSelectedEvent({ ...selectedEvent, time: value })
                     }
                   >
-                    <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
+                    <SelectTrigger
+                      className={
+                        theme === "light"
+                          ? "bg-gray-50 border-gray-300 text-gray-900"
+                          : "bg-gray-800 border-gray-700 text-white"
+                      }
+                    >
                       <SelectValue placeholder="Select time" />
                     </SelectTrigger>
-                    <SelectContent className="bg-gray-800 border-gray-700 text-white">
+                    <SelectContent
+                      className={
+                        theme === "light"
+                          ? "bg-white border-gray-300 text-gray-900"
+                          : "bg-gray-800 border-gray-700 text-white"
+                      }
+                    >
                       {TIME_SLOTS.map((time) => (
                         <SelectItem key={`edit-${time}`} value={time}>
                           {time}
@@ -428,7 +690,10 @@ const WeeklyPlanner: React.FC<WeeklyPlannerProps> = ({
                 </div>
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="edit-color" className="text-white">
+                <Label
+                  htmlFor="edit-color"
+                  className={theme === "light" ? "text-gray-700" : "text-white"}
+                >
                   Color
                 </Label>
                 <Select
@@ -437,10 +702,22 @@ const WeeklyPlanner: React.FC<WeeklyPlannerProps> = ({
                     setSelectedEvent({ ...selectedEvent, color: value })
                   }
                 >
-                  <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
+                  <SelectTrigger
+                    className={
+                      theme === "light"
+                        ? "bg-gray-50 border-gray-300 text-gray-900"
+                        : "bg-gray-800 border-gray-700 text-white"
+                    }
+                  >
                     <SelectValue placeholder="Select color" />
                   </SelectTrigger>
-                  <SelectContent className="bg-gray-800 border-gray-700 text-white">
+                  <SelectContent
+                    className={
+                      theme === "light"
+                        ? "bg-white border-gray-300 text-gray-900"
+                        : "bg-gray-800 border-gray-700 text-white"
+                    }
+                  >
                     {COLOR_OPTIONS.map((color) => (
                       <SelectItem
                         key={`edit-${color.value}`}
@@ -469,7 +746,11 @@ const WeeklyPlanner: React.FC<WeeklyPlannerProps> = ({
               <DialogClose asChild>
                 <Button
                   variant="outline"
-                  className="border-gray-700 text-gray-400 hover:bg-gray-800 hover:text-white"
+                  className={
+                    theme === "light"
+                      ? "border-gray-300 text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                      : "border-gray-700 text-gray-400 hover:bg-gray-800 hover:text-white"
+                  }
                 >
                   Cancel
                 </Button>

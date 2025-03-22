@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { Settings, LayoutGrid } from "lucide-react";
+import { Settings, LayoutGrid, Moon, Sun } from "lucide-react";
 import WeeklyPlanner from "@/components/planner/WeeklyPlanner";
 import TodoList from "@/components/todo/TodoList";
 import PomodoroTimer from "@/components/pomodoro/PomodoroTimer";
@@ -17,12 +17,16 @@ interface DashboardLayoutProps {
   showAllTools?: boolean;
 }
 
+export type ColorTheme = "purple" | "blue" | "pink";
+export type AppTheme = "dark" | "light";
+
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   activeTab = "all",
   onTabChange = () => {},
   showAllTools = true,
 }) => {
-  const [theme, setTheme] = useState<"purple" | "blue" | "pink">("purple");
+  const [colorTheme, setColorTheme] = useState<ColorTheme>("purple");
+  const [appTheme, setAppTheme] = useState<AppTheme>("dark");
   const [aiEnabled, setAiEnabled] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
 
@@ -48,14 +52,44 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     },
   };
 
+  // Apply theme to document
+  useEffect(() => {
+    const root = window.document.documentElement;
+    if (appTheme === "dark") {
+      root.classList.add("dark");
+      root.classList.remove("light");
+    } else {
+      root.classList.add("light");
+      root.classList.remove("dark");
+    }
+  }, [appTheme]);
+
   const toggleAI = () => {
     setAiEnabled(!aiEnabled);
   };
 
+  const toggleTheme = () => {
+    setAppTheme(appTheme === "dark" ? "light" : "dark");
+  };
+
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
+    <div
+      className={cn(
+        "min-h-screen",
+        appTheme === "dark"
+          ? "bg-gray-950 text-white"
+          : "bg-gray-50 text-gray-900",
+      )}
+    >
       {/* Top Bar with Time and Controls */}
-      <div className="fixed top-0 left-0 right-0 bg-black/80 backdrop-blur-md border-b border-gray-800 px-4 py-3 z-50 flex justify-between items-center">
+      <div
+        className={cn(
+          "fixed top-0 left-0 right-0 backdrop-blur-md px-4 py-3 z-50 flex justify-between items-center",
+          appTheme === "dark"
+            ? "bg-black/80 border-b border-gray-800"
+            : "bg-white/80 border-b border-gray-200 shadow-sm",
+        )}
+      >
         <div className="flex items-center space-x-4">
           <motion.div
             className="text-xl font-bold bg-gradient-to-r from-purple-500 via-blue-500 to-pink-500 bg-clip-text text-transparent"
@@ -74,7 +108,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
               </motion.span>
             </span>
           </motion.div>
-          <TimeDisplay />
+          <TimeDisplay theme={appTheme} />
         </div>
 
         <div className="flex items-center space-x-3">
@@ -84,7 +118,26 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             className="relative"
           />
 
-          {/* Theme Selector */}
+          {/* Theme Toggle */}
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={toggleTheme}
+            className={cn(
+              "rounded-full w-8 h-8 border-2",
+              appTheme === "dark"
+                ? "border-yellow-400 bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30"
+                : "border-indigo-400 bg-indigo-500/20 text-indigo-500 hover:bg-indigo-500/30",
+            )}
+          >
+            {appTheme === "dark" ? (
+              <Sun className="h-4 w-4" />
+            ) : (
+              <Moon className="h-4 w-4" />
+            )}
+          </Button>
+
+          {/* Color Theme Selector */}
           <div className="flex space-x-2">
             {Object.keys(themeColors).map((color) => (
               <Button
@@ -95,10 +148,10 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                   "w-8 h-8 rounded-full border-2",
                   `border-${color === "purple" ? "purple" : color === "blue" ? "blue" : "pink"}-500`,
                   `bg-${color === "purple" ? "purple" : color === "blue" ? "blue" : "pink"}-500/20`,
-                  theme === color &&
-                    themeColors[theme as keyof typeof themeColors].glow,
+                  colorTheme === color &&
+                    themeColors[colorTheme as keyof typeof themeColors].glow,
                 )}
-                onClick={() => setTheme(color as "purple" | "blue" | "pink")}
+                onClick={() => setColorTheme(color as ColorTheme)}
               />
             ))}
           </div>
@@ -107,7 +160,12 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             variant="outline"
             size="icon"
             onClick={() => setShowSettings(true)}
-            className="rounded-full w-8 h-8 border-2 border-gray-700 bg-gray-800/50 text-gray-400 hover:text-white hover:bg-gray-700/50"
+            className={cn(
+              "rounded-full w-8 h-8 border-2",
+              appTheme === "dark"
+                ? "border-gray-700 bg-gray-800/50 text-gray-400 hover:text-white hover:bg-gray-700/50"
+                : "border-gray-300 bg-gray-200/50 text-gray-600 hover:text-gray-900 hover:bg-gray-300/50",
+            )}
           >
             <Settings className="h-4 w-4" />
           </Button>
@@ -119,7 +177,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         <motion.h1
           className={cn(
             "text-4xl font-bold text-center mb-8 bg-gradient-to-r bg-clip-text text-transparent",
-            themeColors[theme].primary,
+            themeColors[colorTheme].primary,
           )}
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -134,12 +192,19 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
           onValueChange={onTabChange}
           className="w-full mb-8"
         >
-          <TabsList className="grid w-full max-w-md mx-auto grid-cols-4 bg-gray-900 border border-gray-800">
+          <TabsList
+            className={cn(
+              "grid w-full max-w-md mx-auto grid-cols-4",
+              appTheme === "dark"
+                ? "bg-gray-900 border border-gray-800"
+                : "bg-white border border-gray-200 shadow-sm",
+            )}
+          >
             <TabsTrigger
               value="all"
               className={cn(
                 "data-[state=active]:bg-gradient-to-r",
-                `data-[state=active]:${themeColors[theme].primary}`,
+                `data-[state=active]:${themeColors[colorTheme].primary}`,
                 "data-[state=active]:text-white",
               )}
             >
@@ -150,7 +215,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
               value="planner"
               className={cn(
                 "data-[state=active]:bg-gradient-to-r",
-                `data-[state=active]:${themeColors[theme].primary}`,
+                `data-[state=active]:${themeColors[colorTheme].primary}`,
                 "data-[state=active]:text-white",
               )}
             >
@@ -160,7 +225,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
               value="todo"
               className={cn(
                 "data-[state=active]:bg-gradient-to-r",
-                `data-[state=active]:${themeColors[theme].primary}`,
+                `data-[state=active]:${themeColors[colorTheme].primary}`,
                 "data-[state=active]:text-white",
               )}
             >
@@ -170,7 +235,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
               value="pomodoro"
               className={cn(
                 "data-[state=active]:bg-gradient-to-r",
-                `data-[state=active]:${themeColors[theme].primary}`,
+                `data-[state=active]:${themeColors[colorTheme].primary}`,
                 "data-[state=active]:text-white",
               )}
             >
@@ -187,7 +252,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.3, delay: 0.1 }}
               >
-                <WeeklyPlanner />
+                <WeeklyPlanner theme={appTheme} />
               </motion.div>
               <motion.div
                 className="flex flex-col gap-6"
@@ -195,8 +260,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.3, delay: 0.2 }}
               >
-                <TodoList />
-                <PomodoroTimer />
+                <TodoList theme={appTheme} />
+                <PomodoroTimer theme={appTheme} />
               </motion.div>
             </div>
           </TabsContent>
@@ -209,7 +274,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
               transition={{ duration: 0.3 }}
               className="max-w-5xl mx-auto"
             >
-              <WeeklyPlanner />
+              <WeeklyPlanner theme={appTheme} />
             </motion.div>
           </TabsContent>
 
@@ -220,7 +285,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
               transition={{ duration: 0.3 }}
               className="max-w-md mx-auto"
             >
-              <TodoList />
+              <TodoList theme={appTheme} />
             </motion.div>
           </TabsContent>
 
@@ -231,33 +296,41 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
               transition={{ duration: 0.3 }}
               className="max-w-md mx-auto"
             >
-              <PomodoroTimer />
+              <PomodoroTimer theme={appTheme} />
             </motion.div>
           </TabsContent>
         </Tabs>
       </div>
 
       {/* Settings Panel */}
-      <SettingsPanel open={showSettings} onOpenChange={setShowSettings} />
+      <SettingsPanel
+        open={showSettings}
+        onOpenChange={setShowSettings}
+        theme={appTheme}
+        onThemeChange={setAppTheme}
+      />
 
       {/* Glowing Background Elements */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-[-1]">
         <div
           className={cn(
-            "absolute top-20 left-20 w-64 h-64 rounded-full blur-[100px] opacity-20 bg-gradient-to-r",
-            themeColors[theme].primary,
+            "absolute top-20 left-20 w-64 h-64 rounded-full blur-[100px] bg-gradient-to-r",
+            themeColors[colorTheme].primary,
+            appTheme === "dark" ? "opacity-20" : "opacity-10",
           )}
         />
         <div
           className={cn(
-            "absolute bottom-20 right-20 w-80 h-80 rounded-full blur-[120px] opacity-20 bg-gradient-to-r",
-            themeColors[theme].secondary,
+            "absolute bottom-20 right-20 w-80 h-80 rounded-full blur-[120px] bg-gradient-to-r",
+            themeColors[colorTheme].secondary,
+            appTheme === "dark" ? "opacity-20" : "opacity-10",
           )}
         />
         <div
           className={cn(
-            "absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full blur-[150px] opacity-10 bg-gradient-to-r",
-            themeColors[theme].primary,
+            "absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full blur-[150px] bg-gradient-to-r",
+            themeColors[colorTheme].primary,
+            appTheme === "dark" ? "opacity-10" : "opacity-5",
           )}
         />
       </div>

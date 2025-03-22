@@ -1,7 +1,10 @@
-import { Suspense } from "react";
+import { Suspense, lazy } from "react";
 import { useRoutes, Routes, Route } from "react-router-dom";
 import Home from "./components/home";
 import routes from "tempo-routes";
+
+// Lazy load the Login component
+const Login = lazy(() => import("./components/auth/Login"));
 
 function App() {
   return (
@@ -15,6 +18,7 @@ function App() {
       <>
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
           {import.meta.env.VITE_TEMPO && <Route path="/tempobook/*" />}
         </Routes>
         {import.meta.env.VITE_TEMPO === "true" && useRoutes(routes)}
